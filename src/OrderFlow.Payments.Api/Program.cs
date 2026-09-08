@@ -1,39 +1,54 @@
+using Microsoft.EntityFrameworkCore;
+using OrderFlow.Payments.Api.Infrastructure.Health;
+using OrderFlow.Payments.Api.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+var databaseConnectionString =
+    builder.Configuration["Database:ConnectionString"];
+
+if (string.IsNullOrWhiteSpace(databaseConnectionString))
+{
+    throw new InvalidOperationException(
+        "Database connection string is not configured.");
+}
+
+var pulsarAdminUrl = builder.Configuration["Pulsar:AdminUrl"];
+
+if (!Uri.TryCreate(
+        pulsarAdminUrl,
+        UriKind.Absolute,
+        out var pulsarAdminUri))
+{
+    throw new InvalidOperationException(
+        "Pulsar admin URL is missing or invalid.");
+}
+
 builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<PaymentsDbContext>(options =>
+    options.UseNpgsql(databaseConnectionString));
+
+builder.Services.AddHttpClient(
+    PulsarHealthCheck.HttpClientName,
+    client =>
+    {
+        client.BaseAddress = pulsarAdminUri;
+        client.Timeout = TimeSpan.FromSeconds(3);
+    });
+
+builder.Services
+    .AddHealthChecks()
+    .AddDbContextCheck<PaymentsDbContext>("database")
+    .AddCheck<PulsarHealthCheck>("pulsar");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapHealthChecks("/health");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

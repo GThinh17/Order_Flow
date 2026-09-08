@@ -60,7 +60,66 @@ services:
       timeout: 10s
       retries: 15
       start_period: 30s
+      
+  orders-api:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.Orders.Api/Dockerfile
+    container_name: orderflow-orders-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ConnectionString: >-
+        Host=postgres;Port=5432;Database=orderflow_orders;Username=orders_app;Password=${ORDERS_DB_PASSWORD}
+      Pulsar__AdminUrl: http://pulsar:8080/
+      Pulsar__LookupPath: lookup/v2/topic/persistent/public/default/orderflow-saga-events-partition-0
+    ports:
+      - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pulsar:
+        condition: service_healthy
 
+  inventory-api:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.Inventory.Api/Dockerfile
+    container_name: orderflow-inventory-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ConnectionString: >-
+        Host=postgres;Port=5432;Database=orderflow_inventory;Username=inventory_app;Password=${INVENTORY_DB_PASSWORD}
+      Pulsar__AdminUrl: http://pulsar:8080/
+      Pulsar__LookupPath: lookup/v2/topic/persistent/public/default/orderflow-saga-events-partition-0
+    ports:
+      - "5002:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pulsar:
+        condition: service_healthy
+
+  payments-api:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.Payments.Api/Dockerfile
+    container_name: orderflow-payments-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ConnectionString: >-
+        Host=postgres;Port=5432;Database=orderflow_payments;Username=payments_app;Password=${PAYMENTS_DB_PASSWORD}
+      Pulsar__AdminUrl: http://pulsar:8080/
+      Pulsar__LookupPath: lookup/v2/topic/persistent/public/default/orderflow-saga-events-partition-0
+    ports:
+      - "5003:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pulsar:
+        condition: service_healthy
 volumes:
   postgres-data:
   pulsar-data:

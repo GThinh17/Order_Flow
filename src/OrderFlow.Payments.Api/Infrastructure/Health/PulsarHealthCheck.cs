@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace OrderFlow.Orders.Api.Infrastructure.Health;
+namespace OrderFlow.Payments.Api.Infrastructure.Health;
 
 internal sealed class PulsarHealthCheck(
     IHttpClientFactory httpClientFactory,
