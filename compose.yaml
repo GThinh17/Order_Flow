@@ -1,0 +1,67 @@
+name: orderflow
+
+services:
+  postgres:
+    image: postgres:18.6
+    container_name: orderflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+      POSTGRES_DB: postgres
+
+      ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD}
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
+      PAYMENTS_DB_PASSWORD: ${PAYMENTS_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_ADMIN_USER} -d postgres"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  pulsar:
+    image: apachepulsar/pulsar:4.2.4
+    container_name: orderflow-pulsar
+    restart: unless-stopped
+    command:
+      - bin/pulsar
+      - standalone
+    environment:
+      PULSAR_STANDALONE_USE_ZOOKEEPER: "1"
+      PULSAR_MEM: >-
+        -Xms512m
+        -Xmx512m
+        -XX:MaxDirectMemorySize=256m
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    volumes:
+      - pulsar-data:/pulsar/data
+      - pulsar-conf:/pulsar/conf
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bin/pulsar-admin",
+          "brokers",
+          "healthcheck"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+volumes:
+  postgres-data:
+  pulsar-data:
+  pulsar-conf:
