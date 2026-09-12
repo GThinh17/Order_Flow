@@ -2,16 +2,21 @@ name: orderflow
 
 services:
   postgres:
-    image: postgres:18.6
+    image: ${POSTGRES_IMAGE}
     container_name: orderflow-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_ADMIN_USER}
       POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
-      POSTGRES_DB: postgres
-
+      POSTGRES_DB: ${POSTGRES_DEFAULT_DB}
+      ORDERS_DB_NAME: ${ORDERS_DB_NAME}
+      ORDERS_DB_USER: ${ORDERS_DB_USER}
       ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD}
+      INVENTORY_DB_NAME: ${INVENTORY_DB_NAME}
+      INVENTORY_DB_USER: ${INVENTORY_DB_USER}
       INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
+      PAYMENTS_DB_NAME: ${PAYMENTS_DB_NAME}
+      PAYMENTS_DB_USER: ${PAYMENTS_DB_USER}
       PAYMENTS_DB_PASSWORD: ${PAYMENTS_DB_PASSWORD}
     ports:
       - "5432:5432"
@@ -22,20 +27,18 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_ADMIN_USER} -d postgres"
+          "pg_isready -U ${POSTGRES_ADMIN_USER} -d ${POSTGRES_DEFAULT_DB}"
         ]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
 
   pulsar:
-    image: apachepulsar/pulsar:4.2.4
+    image: ${PULSAR_IMAGE}
     container_name: orderflow-pulsar
     restart: unless-stopped
-    command:
-      - bin/pulsar
-      - standalone
+    command: ["bin/pulsar", "standalone"]
     environment:
       PULSAR_STANDALONE_USE_ZOOKEEPER: "1"
       PULSAR_MEM: >-
@@ -49,77 +52,103 @@ services:
       - pulsar-data:/pulsar/data
       - pulsar-conf:/pulsar/conf
     healthcheck:
-      test:
-        [
-          "CMD",
-          "bin/pulsar-admin",
-          "brokers",
-          "healthcheck"
-        ]
+      test: ["CMD", "bin/pulsar-admin", "brokers", "healthcheck"]
       interval: 10s
       timeout: 10s
-      retries: 15
+      retries: 30
       start_period: 30s
-      
+
+  pulsar-init:
+    image: ${PULSAR_IMAGE}
+    container_name: orderflow-pulsar-init
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    command:
+      - /bin/bash
+      - -c
+      - >
+        bin/pulsar-admin
+        --admin-url http://pulsar:8080
+        topics create-partitioned-topic
+        ${PULSAR_TOPIC}
+        --partitions 4
+        ||
+        bin/pulsar-admin
+        --admin-url http://pulsar:8080
+        topics get-partitioned-topic-metadata
+        ${PULSAR_TOPIC}
+    restart: "no"
+
   orders-api:
     build:
       context: .
-      dockerfile: src/OrderFlow.Orders.Api/Dockerfile
+      dockerfile: src/Orders/OrderFlow.Orders.Api/Dockerfile
     container_name: orderflow-orders-api
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
       Database__ConnectionString: >-
-        Host=postgres;Port=5432;Database=orderflow_orders;Username=orders_app;Password=${ORDERS_DB_PASSWORD}
-      Pulsar__AdminUrl: http://pulsar:8080/
-      Pulsar__LookupPath: lookup/v2/topic/persistent/public/default/orderflow-saga-events-partition-0
+        Host=postgres;Port=5432;Database=${ORDERS_DB_NAME};Username=${ORDERS_DB_USER};Password=${ORDERS_DB_PASSWORD}
+      Pulsar__AdminUrl: ${PULSAR_ADMIN_URL}
+      Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
+      Pulsar__Topic: ${PULSAR_TOPIC}
+      Pulsar__LookupPath: ${PULSAR_LOOKUP_PATH}
     ports:
-      - "5001:8080"
+      - "${ORDERS_HTTP_PORT}:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      pulsar:
-        condition: service_healthy
+      pulsar-init:
+        condition: service_completed_successfully
 
   inventory-api:
     build:
       context: .
-      dockerfile: src/OrderFlow.Inventory.Api/Dockerfile
+      dockerfile: src/Inventory/OrderFlow.Inventory.Api/Dockerfile
     container_name: orderflow-inventory-api
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
       Database__ConnectionString: >-
-        Host=postgres;Port=5432;Database=orderflow_inventory;Username=inventory_app;Password=${INVENTORY_DB_PASSWORD}
-      Pulsar__AdminUrl: http://pulsar:8080/
-      Pulsar__LookupPath: lookup/v2/topic/persistent/public/default/orderflow-saga-events-partition-0
+        Host=postgres;Port=5432;Database=${INVENTORY_DB_NAME};Username=${INVENTORY_DB_USER};Password=${INVENTORY_DB_PASSWORD}
+      Pulsar__AdminUrl: ${PULSAR_ADMIN_URL}
+      Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
+      Pulsar__Topic: ${PULSAR_TOPIC}
+      Pulsar__LookupPath: ${PULSAR_LOOKUP_PATH}
     ports:
-      - "5002:8080"
+      - "${INVENTORY_HTTP_PORT}:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      pulsar:
-        condition: service_healthy
+      pulsar-init:
+        condition: service_completed_successfully
 
   payments-api:
     build:
       context: .
-      dockerfile: src/OrderFlow.Payments.Api/Dockerfile
+      dockerfile: src/Payments/OrderFlow.Payments.Api/Dockerfile
     container_name: orderflow-payments-api
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
       Database__ConnectionString: >-
-        Host=postgres;Port=5432;Database=orderflow_payments;Username=payments_app;Password=${PAYMENTS_DB_PASSWORD}
-      Pulsar__AdminUrl: http://pulsar:8080/
-      Pulsar__LookupPath: lookup/v2/topic/persistent/public/default/orderflow-saga-events-partition-0
+        Host=postgres;Port=5432;Database=${PAYMENTS_DB_NAME};Username=${PAYMENTS_DB_USER};Password=${PAYMENTS_DB_PASSWORD}
+      Pulsar__AdminUrl: ${PULSAR_ADMIN_URL}
+      Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
+      Pulsar__Topic: ${PULSAR_TOPIC}
+      Pulsar__LookupPath: ${PULSAR_LOOKUP_PATH}
     ports:
-      - "5003:8080"
+      - "${PAYMENTS_HTTP_PORT}:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      pulsar:
-        condition: service_healthy
+      pulsar-init:
+        condition: service_completed_successfully
+
 volumes:
   postgres-data:
   pulsar-data:

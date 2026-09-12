@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OrderFlow.Payments.Api\OrderFlow.Payments.Api.csproj" />
+    <ProjectReference Include="..\..\src\Payments\OrderFlow.Payments.Application\OrderFlow.Payments.Application.csproj" />
+    <ProjectReference Include="..\..\src\Payments\OrderFlow.Payments.Domain\OrderFlow.Payments.Domain.csproj" />
   </ItemGroup>
 
 </Project>

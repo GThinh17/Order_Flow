@@ -1,4 +1,4 @@
-﻿namespace OrderFlow.Orders.Tests;
+namespace OrderFlow.Orders.Tests;
 
 public class UnitTest1
 {

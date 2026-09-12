@@ -1,7 +1,10 @@
 **/bin/
 **/obj/
+**/TestResults/
 .git/
 .vs/
 .vscode/
 .env
+.env.*
+!.env.example
 .env.local

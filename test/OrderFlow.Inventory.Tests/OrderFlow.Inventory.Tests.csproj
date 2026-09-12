@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OrderFlow.Inventory.Api\OrderFlow.Inventory.Api.csproj" />
+    <ProjectReference Include="..\..\src\Inventory\OrderFlow.Inventory.Application\OrderFlow.Inventory.Application.csproj" />
+    <ProjectReference Include="..\..\src\Inventory\OrderFlow.Inventory.Domain\OrderFlow.Inventory.Domain.csproj" />
   </ItemGroup>
 
 </Project>
