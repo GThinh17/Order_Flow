@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Infrastructure.Health;
 using OrderFlow.Orders.Infrastructure.Persistence;
+using OrderFlow.Orders.Infrastructure.Persistence.Repositories;
 
 namespace OrderFlow.Orders.Infrastructure;
 
@@ -32,8 +34,21 @@ public static class DependencyInjection
                 "Pulsar admin URL is missing or invalid.");
         }
 
-        services.AddDbContext<OrdersDbContext>(options =>
-            options.UseNpgsql(databaseConnectionString));
+        services.AddDbContext<OrdersDbContext>(
+            options => options.UseNpgsql(
+                databaseConnectionString,
+                npgsqlOptions =>
+                    npgsqlOptions.MigrationsHistoryTable(
+                        "__ef_migrations_history",
+                        OrdersDbContext.SchemaName)));
+        services.AddScoped<
+            IOrderRepository,
+            OrderRepository>();
+
+        services.AddScoped<IUnitOfWork>(
+            serviceProvider =>
+                serviceProvider.GetRequiredService<
+                    OrdersDbContext>());
 
         services.AddHttpClient(
             PulsarHealthCheck.HttpClientName,
