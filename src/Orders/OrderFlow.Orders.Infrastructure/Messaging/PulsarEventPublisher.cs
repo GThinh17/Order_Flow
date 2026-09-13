@@ -1,6 +1,8 @@
+using System.Net.Sockets;
 using DotPulsar;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace OrderFlow.Orders.Infrastructure.Messaging
@@ -12,7 +14,8 @@ namespace OrderFlow.Orders.Infrastructure.Messaging
         private readonly IProducer<string> _producer;
 
         public PulsarEventPublisher(
-            IOptions<PulsarOptions> options)
+            IOptions<PulsarOptions> options,
+            ILogger<PulsarEventPublisher> logger)
         {
             var pulsarOptions = options.Value;
 
@@ -22,12 +25,26 @@ namespace OrderFlow.Orders.Infrastructure.Messaging
                 out var serviceUrl))
             {
                 throw new InvalidOperationException(
-                    "Pulsar Topic is missing");
+                    "Pulsar ServiceUrl is missing or invalid.");
             }
 
             _client = PulsarClient
                 .Builder()
                 .ServiceUrl(serviceUrl)
+                .ExceptionHandler(context =>
+                {
+                    if (context.Exception is not SocketException)
+                    {
+                        return;
+                    }
+
+                    logger.LogWarning(
+                        context.Exception,
+                        "Pulsar connection failed; retrying.");
+
+                    context.Result = FaultAction.Retry;
+                    context.ExceptionHandled = true;
+                })
                 .Build();
 
             _producer = _client

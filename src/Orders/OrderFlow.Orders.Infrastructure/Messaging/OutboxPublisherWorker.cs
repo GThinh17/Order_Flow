@@ -21,12 +21,12 @@ namespace OrderFlow.Orders.Infrastructure.Messaging
 
         public OutboxPublisherWorker(
             IServiceScopeFactory scopeFactory,
-            IEventPublisher eventPushlisher,
+            IEventPublisher eventPublisher,
             TimeProvider timeProvider,
             ILogger<OutboxPublisherWorker> logger)
         {
             _scopeFactory = scopeFactory;
-            _eventPublisher = eventPushlisher;
+            _eventPublisher = eventPublisher;
             _timeProvider = timeProvider;
             _logger = logger;
         }

@@ -38,7 +38,8 @@ services:
     image: ${PULSAR_IMAGE}
     container_name: orderflow-pulsar
     restart: unless-stopped
-    command: ["bin/pulsar", "standalone"]
+    command:
+      ["bin/pulsar", "standalone", "--advertised-address", "pulsar"]
     environment:
       PULSAR_STANDALONE_USE_ZOOKEEPER: "1"
       PULSAR_MEM: >-
