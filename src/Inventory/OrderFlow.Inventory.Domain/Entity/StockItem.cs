@@ -74,5 +74,48 @@ namespace OrderFlow.Inventory.Domain.Entity
 
             QuantityOnHand = adjustedQuantity;
         }
+
+        public bool TryReserve(int quantity)
+        {
+            if (quantity <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(quantity));
+            }
+
+            if (Available < quantity)
+            {
+                return false;
+            }
+            QuantityReserved =
+                checked(QuantityReserved + quantity);
+
+            return true;
+        }
+
+        public void Release(int quantity)
+        {
+            if (quantity <= 0 ||
+                quantity > QuantityReserved)
+            {
+                throw new InvalidOperationException(
+                    "Invalid quantity to release");
+            }
+
+            QuantityReserved -= quantity;
+        }
+
+        public void Consume(int quantity)
+        {
+            if (quantity <= 0 ||
+                quantity > QuantityReserved)
+            {
+                throw new InvalidOperationException(
+                    "Invalid quantity to consume");
+            }
+
+            QuantityReserved -= quantity;
+            QuantityOnHand -= quantity;
+        }
     }
 }

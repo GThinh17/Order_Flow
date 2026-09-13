@@ -40,4 +40,54 @@ public sealed class StockItemTests
         Assert.Throws<InvalidOperationException>(
             () => stockItem.AdjustOnHand(-11));
     }
+
+    [Fact]
+    public void TryReserve_WhenStockIsAvailable_ReservesStock()
+    {
+        var stock = StockItem.Create("WIDGET-01", 10);
+
+        var succeeded = stock.TryReserve(2);
+
+        Assert.True(succeeded);
+        Assert.Equal(2, stock.QuantityReserved);
+        Assert.Equal(8, stock.Available);
+    }
+
+    [Fact]
+    public void TryReserve_WhenStockIsInsufficient_DoesNotChangeStock()
+    {
+        var stock = StockItem.Create("WIDGET-01", 1);
+
+        var succeeded = stock.TryReserve(2);
+
+        Assert.False(succeeded);
+        Assert.Equal(0, stock.QuantityReserved);
+        Assert.Equal(1, stock.Available);
+    }
+
+    [Fact]
+    public void Release_RestoresAvailableStock()
+    {
+        var stock = StockItem.Create("WIDGET-01", 10);
+        stock.TryReserve(2);
+
+        stock.Release(2);
+
+        Assert.Equal(10, stock.QuantityOnHand);
+        Assert.Equal(0, stock.QuantityReserved);
+        Assert.Equal(10, stock.Available);
+    }
+
+    [Fact]
+    public void Consume_PermanentlyReducesStock()
+    {
+        var stock = StockItem.Create("WIDGET-01", 10);
+        stock.TryReserve(2);
+
+        stock.Consume(2);
+
+        Assert.Equal(8, stock.QuantityOnHand);
+        Assert.Equal(0, stock.QuantityReserved);
+        Assert.Equal(8, stock.Available);
+    }
 }
