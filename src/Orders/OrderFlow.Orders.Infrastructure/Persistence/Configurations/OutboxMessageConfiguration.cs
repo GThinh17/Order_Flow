@@ -18,6 +18,10 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Configuration
                 .HasColumnName("id")
                 .ValueGeneratedOnAdd();
 
+            builder.Property(message => message.EventId)
+                .HasColumnName("event_id")
+                .IsRequired();
+
             builder.Property(message => message.EventType)
                 .HasColumnName("event_type")
                 .HasMaxLength(100)
@@ -38,13 +42,12 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Configuration
                 .HasColumnType("json")
                 .IsRequired();
 
-            builder.Property(message => message.CreateAt)
-                .HasColumnName("create_at")
+            builder.Property(message => message.CreatedAt)
+                .HasColumnName("created_at")
                 .IsRequired();
 
-            builder.Property(message => message.PublishAt)
-                .HasColumnName("publish_at")
-                .IsRequired();
+            builder.Property(message => message.PublishedAt)
+                .HasColumnName("published_at");
         }
     }
 }

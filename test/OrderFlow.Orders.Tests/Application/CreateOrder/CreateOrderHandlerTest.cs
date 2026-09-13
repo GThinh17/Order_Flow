@@ -1,102 +1,115 @@
-// using OrderFlow.Orders.Application.Abstractions.Persistence;
-// using OrderFlow.Orders.Application.OrderCommand;
-// using OrderFlow.Orders.Domain;
-// using OrderFlow.Orders.Domain.Entity;
-// using OrderFlow.Orders.Domain.Enum;
+using OrderFlow.Contracts.IntegrationEvents.Orders;
+using OrderFlow.Orders.Application.Abstractions.Messaging;
+using OrderFlow.Orders.Application.Abstractions.Persistence;
+using OrderFlow.Orders.Application.OrderCommand;
+using OrderFlow.Orders.Domain.Entity;
+using OrderFlow.Orders.Domain.Enum;
 
-// namespace OrderFlow.Orders.Tests.Application.CreateOrder;
+namespace OrderFlow.Orders.Tests.Application.CreateOrder;
 
-// public sealed class CreateOrderHandlerTests
-// {
-//     [Fact]
-//     public async Task HandleAsync_WithValidCommand_CreatesAndSavesPendingOrder()
-//     {
-//         var repository = new RecordingOrderRepository();
-//         var unitOfWork = new RecordingUnitOfWork();
+public sealed class CreateOrderHandlerTests
+{
+    [Fact]
+    public async Task HandleAsync_WithValidCommand_CreatesOrderAndOutboxMessageThenSavesOnce()
+    {
+        var repository = new RecordingOrderRepository();
+        var unitOfWork = new RecordingUnitOfWork();
+        var outboxWriter = new RecordingOutboxWriter();
 
-//         var utcNow = new DateTimeOffset(
-//             2026,
-//             9,
-//             12,
-//             10,
-//             15,
-//             0,
-//             TimeSpan.Zero);
+        var utcNow = new DateTimeOffset(
+            2026,
+            9,
+            13,
+            10,
+            15,
+            0,
+            TimeSpan.Zero);
 
-//         var timeProvider = new FixedTimeProvider(utcNow);
+        var handler = new CreateOrderHandler(
+            repository,
+            unitOfWork,
+            outboxWriter,
+            new FixedTimeProvider(utcNow));
 
-//         var handler = new CreateOrderHandler(
-//             repository,
-//             unitOfWork,
-//             timeProvider);
+        var command = new CreateOrderCommand(
+            "cust-123",
+            [
+                new CreateOrderLineCommand(
+                    "WIDGET-01",
+                    2,
+                    10.00m),
+                new CreateOrderLineCommand(
+                    "WIDGET-02",
+                    1,
+                    5.50m)
+            ]);
 
-//         var command = new CreateOrderCommand(
-//             "cust-123",
-//             new[]
-//             {
-//                 new CreateOrderLineCommand(
-//                     "WIDGET-01",
-//                     2,
-//                     10.00m),
+        var result = await handler.HandleAsync(command);
 
-//                 new CreateOrderLineCommand(
-//                     "WIDGET-02",
-//                     1,
-//                     5.50m)
-//             });
+        Assert.NotEqual(Guid.Empty, result.OrderId);
+        Assert.Equal(result.OrderId, result.CorrelationId);
+        Assert.Equal(OrderStatus.Pending, result.Status);
 
-//         var result = await handler.HandleAsync(command);
+        var addedOrder = Assert.IsType<Order>(repository.AddedOrder);
+        Assert.Equal(result.OrderId, addedOrder.Id);
+        Assert.Equal("cust-123", addedOrder.CustomerId);
+        Assert.Equal(25.50m, addedOrder.TotalAmount);
+        Assert.Equal(utcNow, addedOrder.CreatedAt);
+        Assert.Equal(utcNow, addedOrder.UpdatedAt);
 
-//         Assert.NotEqual(Guid.Empty, result.OrderId);
-//         Assert.Equal(result.OrderId, result.CorrelationId);
-//         Assert.Equal(OrderStatus.Pending, result.Status);
+        var addedEvent = Assert.IsType<OrderPlaced>(
+            outboxWriter.AddedEvent);
+        Assert.Equal(result.OrderId, addedEvent.OrderId);
+        Assert.Equal(result.CorrelationId, addedEvent.CorrelationId);
+        Assert.Equal(utcNow, addedEvent.Timestamp);
+        Assert.Equal(2, addedEvent.Lines.Count);
 
-//         Assert.NotNull(repository.AddedOrder);
-//         Assert.Equal(result.OrderId, repository.AddedOrder.Id);
-//         Assert.Equal("cust-123", repository.AddedOrder.CustomerId);
-//         Assert.Equal(25.50m, repository.AddedOrder.TotalAmount);
-//         Assert.Equal(utcNow, repository.AddedOrder.CreateAt);
+        Assert.Equal(1, unitOfWork.SaveChangesCallCount);
+    }
 
-//         Assert.Equal(1, unitOfWork.SaveChangesCallCount);
-//     }
+    private sealed class RecordingOrderRepository
+        : IOrderRepository
+    {
+        public Order? AddedOrder { get; private set; }
 
-//     private sealed class RecordingOrderRepository
-//         : IOrderRepository
-//     {
-//         public Order? AddedOrder { get; private set; }
+        public void Add(Order order)
+        {
+            AddedOrder = order;
+        }
+    }
 
-//         public void Add(Order order)
-//         {
-//             AddedOrder = order;
-//         }
-//     }
+    private sealed class RecordingUnitOfWork
+        : IUnitOfWork
+    {
+        public int SaveChangesCallCount { get; private set; }
 
-//     private sealed class RecordingUnitOfWork
-//         : IUnitOfWork
-//     {
-//         public int SaveChangesCallCount { get; private set; }
+        public Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            SaveChangesCallCount++;
 
-//         public Task<int> SaveChangesAsync(
-//             CancellationToken cancellationToken = default)
-//         {
-//             SaveChangesCallCount++;
+            return Task.FromResult(1);
+        }
+    }
 
-//             return Task.FromResult(1);
-//         }
-//     }
+    private sealed class RecordingOutboxWriter
+        : IOutboxWriter
+    {
+        public OrderPlaced? AddedEvent { get; private set; }
 
-//     private sealed class FixedTimeProvider : TimeProvider
-//     {
-//         private readonly DateTimeOffset _utcNow;
+        public void Add(OrderPlaced orderPlaced)
+        {
+            AddedEvent = orderPlaced;
+        }
+    }
 
-//         public FixedTimeProvider(DateTimeOffset utcNow)
-//         {
-//             _utcNow = utcNow;
-//         }
-
-//         public override DateTimeOffset GetUtcNow()
-//         {
-//             return _utcNow;
-//         }
-//     }
-// }
+    private sealed class FixedTimeProvider(
+        DateTimeOffset utcNow)
+        : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            return utcNow;
+        }
+    }
+}

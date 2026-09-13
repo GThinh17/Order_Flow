@@ -1,4 +1,3 @@
-using OrderFlow.Orders.Api.Contract;
 using OrderFlow.Orders.Api.Contract.Orders;
 using OrderFlow.Orders.Application.OrderCommand;
 

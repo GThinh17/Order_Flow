@@ -8,13 +8,13 @@ namespace OrderFlow.Orders.Domain.Entity
 
         }
 
-        public long Id { get; set; }
+        public long Id { get; private set; }
 
-        public string Sku { get; set; } = string.Empty;
+        public string Sku { get; private set; } = string.Empty;
 
-        public decimal Quantity { get; set; }
+        public int Quantity { get; private set; }
 
-        public decimal UnitPrice { get; set; }
+        public decimal UnitPrice { get; private set; }
 
         public decimal TotalAmount => Quantity * UnitPrice;
 

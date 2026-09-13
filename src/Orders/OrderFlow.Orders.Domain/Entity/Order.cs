@@ -11,7 +11,7 @@ namespace OrderFlow.Orders.Domain.Entity
 
         }
 
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
         public string CustomerId { get; private set; } = string.Empty;
 
@@ -19,9 +19,9 @@ namespace OrderFlow.Orders.Domain.Entity
 
         public decimal TotalAmount { get; private set; }
 
-        public DateTimeOffset CreateAt { get; private set; }
+        public DateTimeOffset CreatedAt { get; private set; }
 
-        public DateTimeOffset UpdateAt { get; private set; }
+        public DateTimeOffset UpdatedAt { get; private set; }
 
         public IReadOnlyCollection<OrderLine> Lines => _lines.AsReadOnly();
 
@@ -66,8 +66,8 @@ namespace OrderFlow.Orders.Domain.Entity
                 TotalAmount = orderLines.Sum(
                     line => line.TotalAmount),
                 Status = OrderStatus.Pending,
-                CreateAt = utcNow,
-                UpdateAt = utcNow
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
             };
 
             order._lines.AddRange(orderLines);

@@ -6,6 +6,6 @@ namespace OrderFlow.Orders.Domain.Enum
         Reserving,
         Charging,
         Cancelled,
-        Comfirmed
+        Confirmed
     }
 }

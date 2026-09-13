@@ -32,11 +32,16 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Configuration
 
             builder.Property<Guid>("OrderId")
                 .HasColumnName("order_id")
+                .IsRequired();
+
+            builder.Property(orderLine => orderLine.Sku)
+                .HasColumnName("sku")
                 .HasMaxLength(50)
                 .IsRequired();
 
             builder.Property(orderLine => orderLine.Quantity)
                 .HasColumnName("quantity")
+                .HasColumnType("integer")
                 .IsRequired();
 
             builder.Property(orderLine => orderLine.UnitPrice)

@@ -13,14 +13,14 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
             string topic,
             string partitionKey,
             string payload,
-            DateTimeOffset createAt)
+            DateTimeOffset createdAt)
         {
             EventId = eventId;
             EventType = eventType;
             Topic = topic;
             PartitionKey = partitionKey;
             Payload = payload;
-            CreateAt = createAt;
+            CreatedAt = createdAt;
         }
 
         public long Id { get; private set; }
@@ -29,7 +29,7 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
         public string Topic { get; private set; } = string.Empty;
         public string PartitionKey { get; private set; } = string.Empty;
         public string Payload { get; private set; } = string.Empty;
-        public DateTimeOffset CreateAt { get; private set; }
-        public DateTimeOffset? PublishAt { get; private set; }
+        public DateTimeOffset CreatedAt { get; private set; }
+        public DateTimeOffset? PublishedAt { get; private set; }
     }
 }

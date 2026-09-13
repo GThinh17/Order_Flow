@@ -39,12 +39,12 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Configuration
                 .HasMaxLength(20)
                 .IsRequired();
 
-            builder.Property(order => order.CreateAt)
-                .HasColumnName("create_at")
+            builder.Property(order => order.CreatedAt)
+                .HasColumnName("created_at")
                 .IsRequired();
 
-            builder.Property(order => order.UpdateAt)
-                .HasColumnName("update_at")
+            builder.Property(order => order.UpdatedAt)
+                .HasColumnName("updated_at")
                 .IsRequired();
 
             builder.HasMany(order => order.Lines)

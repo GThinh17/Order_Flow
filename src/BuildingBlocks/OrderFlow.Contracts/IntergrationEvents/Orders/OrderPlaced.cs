@@ -12,6 +12,6 @@ namespace OrderFlow.Contracts.IntegrationEvents.Orders
 
     public sealed record OrderPlacedLine(
         string Sku,
-        decimal Quantity,
+        int Quantity,
         decimal UnitPrice);
 }

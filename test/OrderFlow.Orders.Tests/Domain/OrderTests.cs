@@ -40,8 +40,8 @@ public sealed class OrderTests
         Assert.Equal(Orders.Domain.Enum.OrderStatus.Pending, order.Status);
         Assert.Equal(25.50m, order.TotalAmount);
         Assert.Equal(2, order.Lines.Count);
-        Assert.Equal(createdAt, order.CreateAt);
-        Assert.Equal(createdAt, order.UpdateAt);
+        Assert.Equal(createdAt, order.CreatedAt);
+        Assert.Equal(createdAt, order.UpdatedAt);
     }
 
     [Fact]

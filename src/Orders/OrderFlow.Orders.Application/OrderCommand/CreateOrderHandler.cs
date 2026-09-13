@@ -39,10 +39,12 @@ namespace OrderFlow.Orders.Application.OrderCommand
                     line.UnitPrice))
                 .ToList();
 
+            var utcNow = _timeProvider.GetUtcNow();
+
             var order = Order.Create(
                 command.CustomerId,
                 orderLines,
-                _timeProvider.GetUtcNow());
+                utcNow);
 
             _orderRepository.Add(order);
 
@@ -50,7 +52,7 @@ namespace OrderFlow.Orders.Application.OrderCommand
                 Guid.NewGuid(),
                 order.Id,
                 order.Id,
-                DateTimeOffset.UtcNow,
+                utcNow,
                 order.CustomerId,
                 order.TotalAmount,
                 order.Lines
