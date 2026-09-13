@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderFlow.Orders.Application.Abstractions.Messaging;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Infrastructure.Health;
+using OrderFlow.Orders.Infrastructure.Messaging;
 using OrderFlow.Orders.Infrastructure.Persistence;
 using OrderFlow.Orders.Infrastructure.Persistence.Repositories;
 
@@ -68,6 +69,30 @@ public static class DependencyInjection
             .AddHealthChecks()
             .AddDbContextCheck<OrdersDbContext>("database")
             .AddCheck<PulsarHealthCheck>("pulsar");
+
+        services
+            .AddOptions<PulsarOptions>()
+            .Bind(
+                configuration.GetSection(
+                    PulsarOptions.SectionName))
+            .Validate(
+                options => Uri.TryCreate(
+                    options.ServiceUrl,
+                    UriKind.Absolute,
+                    out _),
+                "Pulsar ServiceUrl is missing or invalid.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(options.Topic),
+                "Pulsar Topic is missing.")
+            .ValidateOnStart();
+
+        services.AddSingleton<
+            IEventPublisher,
+            PulsarEventPublisher>();
+
+        services.AddHostedService<
+            OutboxPublisherWorker>();
 
         return services;
     }

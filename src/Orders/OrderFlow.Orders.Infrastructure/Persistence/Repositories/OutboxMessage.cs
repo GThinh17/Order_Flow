@@ -31,5 +31,15 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
         public string Payload { get; private set; } = string.Empty;
         public DateTimeOffset CreatedAt { get; private set; }
         public DateTimeOffset? PublishedAt { get; private set; }
+
+        public void MarkAsPublished(DateTimeOffset publishedAt)
+        {
+            if (PublishedAt is not null)
+            {
+                return;
+            }
+
+            PublishedAt = publishedAt;
+        }
     }
 }
