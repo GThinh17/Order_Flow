@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderFlow.Inventory.Application.Abstractions.Persistence;
 using OrderFlow.Inventory.Infrastructure.Health;
 using OrderFlow.Inventory.Infrastructure.Persistence;
+using OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
 
 namespace OrderFlow.Inventory.Infrastructure;
 
@@ -47,6 +49,15 @@ public static class DependencyInjection
             .AddHealthChecks()
             .AddDbContextCheck<InventoryDbContext>("database")
             .AddCheck<PulsarHealthCheck>("pulsar");
+
+        services.AddScoped<
+            IStockRepository,
+            StockRepository>();
+
+        services.AddScoped<IUnitOfWork>(
+            serviceProvider =>
+                serviceProvider.GetRequiredService<
+                    InventoryDbContext>());
 
         return services;
     }

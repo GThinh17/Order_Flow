@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using OrderFlow.Inventory.Api.Endpoints;
+using OrderFlow.Inventory.Application.InventoryCommand;
 using OrderFlow.Inventory.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+builder.Services.AddScoped<GetStockHandler>();
+
+builder.Services.AddScoped<AdjustStockHandler>();
+
+app.MapStockEndpoints();
 
 app.MapHealthChecks("/health");
 
