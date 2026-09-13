@@ -1,3 +1,5 @@
+using OrderFlow.Contracts.IntegrationEvents.Orders;
+using OrderFlow.Orders.Application.Abstractions.Messaging;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Domain.Entity;
 
@@ -7,15 +9,18 @@ namespace OrderFlow.Orders.Application.OrderCommand
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IOutboxWriter _outboxWriter;
         private readonly TimeProvider _timeProvider;
 
         public CreateOrderHandler(
             IOrderRepository orderRepository,
             IUnitOfWork unitOfWork,
+            IOutboxWriter outboxWriter,
             TimeProvider timeProvider
         )
         {
             _orderRepository = orderRepository;
+            _outboxWriter = outboxWriter;
             _unitOfWork = unitOfWork;
             _timeProvider = timeProvider;
         }
@@ -40,6 +45,22 @@ namespace OrderFlow.Orders.Application.OrderCommand
                 _timeProvider.GetUtcNow());
 
             _orderRepository.Add(order);
+
+            var orderPlaced = new OrderPlaced(
+                Guid.NewGuid(),
+                order.Id,
+                order.Id,
+                DateTimeOffset.UtcNow,
+                order.CustomerId,
+                order.TotalAmount,
+                order.Lines
+                    .Select(line => new OrderPlacedLine(
+                            line.Sku,
+                            line.Quantity,
+                            line.UnitPrice))
+                    .ToArray());
+
+            _outboxWriter.Add(orderPlaced);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Domain.Entity;
+using OrderFlow.Orders.Infrastructure.Persistence.Repositories;
 
 namespace OrderFlow.Orders.Infrastructure.Persistence;
 
@@ -19,6 +20,7 @@ public sealed class OrdersDbContext
 
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
 
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);

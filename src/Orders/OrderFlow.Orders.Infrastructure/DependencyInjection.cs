@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderFlow.Orders.Application.Abstractions.Messaging;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Infrastructure.Health;
 using OrderFlow.Orders.Infrastructure.Persistence;
@@ -41,6 +42,11 @@ public static class DependencyInjection
                     npgsqlOptions.MigrationsHistoryTable(
                         "__ef_migrations_history",
                         OrdersDbContext.SchemaName)));
+
+        services.AddScoped<
+            IOutboxWriter,
+            OutboxWriter>();
+
         services.AddScoped<
             IOrderRepository,
             OrderRepository>();

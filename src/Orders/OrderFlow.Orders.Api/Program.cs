@@ -1,10 +1,19 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using OrderFlow.Orders.Api.Endpoints.Orders;
+using OrderFlow.Orders.Application.OrderCommand;
 using OrderFlow.Orders.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddSingleton<TimeProvider>(
+    TimeProvider.System);
+
+builder.Services.AddScoped<CreateOrderHandler>();
+
+builder.Services.AddInfrastructure(
+    builder.Configuration);
 
 var app = builder.Build();
 
@@ -14,6 +23,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
+
+app.MapCreateOrderEndpoint();
 
 app.Run();
 

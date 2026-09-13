@@ -1,8 +1,9 @@
+using OrderFlow.Orders.Application.OrderCommand;
+
 namespace OrderFlow.Orders.Api.Contract.Orders
 {
     public sealed record class CreateOrderRequest(
-        Guid OrderId,
-        Guid Correlation,
-        string Status
+        string CustomerId,
+        IReadOnlyCollection<CreateOrderLineCommand> Lines
     );
 }
