@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Inventory.Application.Abstractions.Persistence;
 using OrderFlow.Inventory.Domain.Entity;
+using OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
 
 namespace OrderFlow.Inventory.Infrastructure.Persistence
 {
@@ -17,6 +18,12 @@ namespace OrderFlow.Inventory.Infrastructure.Persistence
         }
 
         public DbSet<StockItem> StockItems => Set<StockItem>();
+
+        public DbSet<Reservation> Reservations => Set<Reservation>();
+
+        public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
+
+        public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

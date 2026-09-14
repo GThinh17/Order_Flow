@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using OrderFlow.Contracts.IntegrationEvents.Inventory;
 using OrderFlow.Contracts.IntegrationEvents.Orders;
+using OrderFlow.Inventory.Application.Abstractions.Persistence;
 using OrderFlow.Inventory.Domain.Entity;
 
-namespace OrderFlow.Inventory.Application.Abstractions.Persistence
+namespace OrderFlow.Inventory.Application.InventoryCommand
 {
     public sealed class ReserveOrderHandler
     {
@@ -11,7 +11,7 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence
             _inventoryTransactionRunner;
         private readonly IStockRepository
             _stockRepository;
-        private readonly IReservaionRepository
+        private readonly IReservationRepository
             _reservationRepository;
         private readonly IInboxRepository
             _inboxRepository;
@@ -23,7 +23,7 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence
         public ReserveOrderHandler(
             IInventoryTransactionRunner inventoryTransactionRunner,
             IStockRepository stockRepository,
-            IReservaionRepository reservationRepository,
+            IReservationRepository reservationRepository,
             IInboxRepository inboxRepository,
             IInventoryOutboxWriter inventoryOutboxWriter,
             TimeProvider timeProvider)
@@ -38,12 +38,12 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence
 
         public Task HandleAsync(
             OrderPlaced orderPlaced,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(orderPlaced);
             ArgumentNullException.ThrowIfNull(orderPlaced.Lines);
 
-            return _inventoryTransactionRunner.ExcuteAsync(
+            return _inventoryTransactionRunner.ExecuteAsync(
                 transactionToken =>
                     ProcessAsync(
                         orderPlaced,
@@ -122,7 +122,7 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence
                     new ReservationFailed(
                         Guid.NewGuid(),
                         orderPlaced.OrderId,
-                        orderPlaced.OrderId,
+                        orderPlaced.CorrelationId,
                         utcNow,
                         failureReason);
 
@@ -176,7 +176,7 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence
                 new ReservationSucceeded(
                     Guid.NewGuid(),
                     orderPlaced.OrderId,
-                    orderPlaced.OrderId,
+                    orderPlaced.CorrelationId,
                     utcNow,
                     reservationId,
                     requestedLines

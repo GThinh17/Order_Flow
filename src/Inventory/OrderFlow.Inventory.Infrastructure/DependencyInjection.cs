@@ -35,7 +35,23 @@ public static class DependencyInjection
         }
 
         services.AddDbContext<InventoryDbContext>(options =>
-            options.UseNpgsql(databaseConnectionString));
+            options.UseNpgsql(
+                databaseConnectionString,
+                npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsHistoryTable(
+                        "__ef_migrations_history",
+                        InventoryDbContext.SchemaName);
+
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(2),
+                        errorCodesToAdd:
+                        [
+                            "40001",
+                            "40P01"
+                        ]);
+                }));
 
         services.AddHttpClient(
             PulsarHealthCheck.HttpClientName,
@@ -53,6 +69,22 @@ public static class DependencyInjection
         services.AddScoped<
             IStockRepository,
             StockRepository>();
+
+        services.AddScoped<
+            IInventoryTransactionRunner,
+            EfInventoryTransactionRunner>();
+
+        services.AddScoped<
+            IInboxRepository,
+            InboxRepository>();
+
+        services.AddScoped<
+            IReservationRepository,
+            ReservationRepository>();
+
+        services.AddScoped<
+            IInventoryOutboxWriter,
+            InventoryOutboxWriter>();
 
         services.AddScoped<IUnitOfWork>(
             serviceProvider =>

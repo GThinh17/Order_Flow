@@ -10,8 +10,8 @@ namespace OrderFlow.Inventory.Domain.Entity
 
         private Reservation(
             Guid id,
-            Guid orderId,
             Guid reservationId,
+            Guid orderId,
             string sku,
             int quantity,
             DateTimeOffset createdAt)

@@ -17,7 +17,7 @@ namespace OrderFlow.Inventory.Infrastructure.Persistence.Repositories
         }
 
         public Guid EventId { get; private set; }
-        public string EventType { get; private set; }
+        public string EventType { get; private set; } = string.Empty;
         public DateTimeOffset ProcessedAt { get; private set; }
     }
 }

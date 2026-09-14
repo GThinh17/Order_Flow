@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderFlow.Inventory.Domain.Entity;
 
-namespace OrderFlow.Inventory.Application.Abstractions.Persistence.Configurations
+namespace OrderFlow.Inventory.Infrastructure.Persistence.Configurations
 {
     public sealed class StockItemConfiguration
         : IEntityTypeConfiguration<StockItem>

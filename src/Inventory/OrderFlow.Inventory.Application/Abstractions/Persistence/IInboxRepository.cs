@@ -4,11 +4,11 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence
     {
         Task<bool> ExistsAsync(
             Guid eventId,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default);
 
         void Add(
             Guid eventId,
             string eventType,
-            DateTimeOffset procssedAt);
+            DateTimeOffset processedAt);
     }
 }

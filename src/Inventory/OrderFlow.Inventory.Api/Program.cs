@@ -5,9 +5,11 @@ using OrderFlow.Inventory.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<GetStockHandler>();
 builder.Services.AddScoped<AdjustStockHandler>();
+builder.Services.AddScoped<ReserveOrderHandler>();
 
 var app = builder.Build();
 

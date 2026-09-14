@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderFlow.Inventory.Domain.Entity;
 
-namespace OrderFlow.Inventory.Application.Abstractions.Persistence.Configurations
+namespace OrderFlow.Inventory.Infrastructure.Persistence.Configurations
 {
     public sealed class ReservationConfiguration
         : IEntityTypeConfiguration<Reservation>
@@ -23,7 +23,12 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence.Configuration
             builder.HasKey(reservation => reservation.Id);
 
             builder.Property(reservation => reservation.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedNever();
+
+            builder.Property(reservation => reservation.ReservationId)
+                .HasColumnName("reservation_id")
+                .IsRequired();
 
             builder.Property(reservation => reservation.OrderId)
                 .HasColumnName("order_id")
@@ -51,6 +56,17 @@ namespace OrderFlow.Inventory.Application.Abstractions.Persistence.Configuration
             builder.Property(order => order.UpdatedAt)
                 .HasColumnName("updated_at")
                 .IsRequired();
+
+            builder.HasIndex(reservation => reservation.ReservationId);
+
+            builder.HasIndex(reservation => reservation.OrderId);
+
+            builder.HasIndex(reservation => new
+                {
+                    reservation.OrderId,
+                    reservation.Sku
+                })
+                .IsUnique();
         }
     }
 }
