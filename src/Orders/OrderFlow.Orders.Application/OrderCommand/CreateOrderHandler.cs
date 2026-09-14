@@ -8,18 +8,21 @@ namespace OrderFlow.Orders.Application.OrderCommand
     public sealed class CreateOrderHandler
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IOrderSagaStateRepository _sagaStateRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOutboxWriter _outboxWriter;
         private readonly TimeProvider _timeProvider;
 
         public CreateOrderHandler(
             IOrderRepository orderRepository,
+            IOrderSagaStateRepository sagaStateRepository,
             IUnitOfWork unitOfWork,
             IOutboxWriter outboxWriter,
             TimeProvider timeProvider
         )
         {
             _orderRepository = orderRepository;
+            _sagaStateRepository = sagaStateRepository;
             _outboxWriter = outboxWriter;
             _unitOfWork = unitOfWork;
             _timeProvider = timeProvider;
@@ -47,6 +50,9 @@ namespace OrderFlow.Orders.Application.OrderCommand
                 utcNow);
 
             _orderRepository.Add(order);
+
+            _sagaStateRepository.Add(
+                OrderSagaState.Create(order.Id));
 
             var orderPlaced = new OrderPlaced(
                 Guid.NewGuid(),

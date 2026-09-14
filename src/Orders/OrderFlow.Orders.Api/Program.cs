@@ -11,6 +11,8 @@ builder.Services.AddSingleton<TimeProvider>(
     TimeProvider.System);
 
 builder.Services.AddScoped<CreateOrderHandler>();
+builder.Services.AddScoped<ReservationSucceededHandler>();
+builder.Services.AddScoped<ReservationFailedHandler>();
 
 builder.Services.AddInfrastructure(
     builder.Configuration);

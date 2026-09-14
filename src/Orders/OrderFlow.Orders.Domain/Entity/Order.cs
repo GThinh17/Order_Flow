@@ -74,5 +74,59 @@ namespace OrderFlow.Orders.Domain.Entity
 
             return order;
         }
+
+        public void StartReserving(
+            DateTimeOffset utcNow)
+        {
+            if (Status == OrderStatus.Reserving)
+            {
+                return;
+            }
+
+            if (Status != OrderStatus.Pending)
+            {
+                throw new InvalidOperationException(
+                    $"Order cannot transition from {Status} to Reserving.");
+            }
+
+            Status = OrderStatus.Reserving;
+            UpdatedAt = utcNow;
+        }
+
+        public void MarkReservationSucceeded(
+            DateTimeOffset utcNow)
+        {
+            if (Status == OrderStatus.Charging)
+            {
+                return;
+            }
+
+            if (Status != OrderStatus.Reserving)
+            {
+                throw new InvalidOperationException(
+                    $"Order cannot transition from {Status} to Charging.");
+            }
+
+            Status = OrderStatus.Charging;
+            UpdatedAt = utcNow;
+        }
+
+        public void MarkReservationFailed(
+            DateTimeOffset utcNow)
+        {
+            if (Status == OrderStatus.Cancelled)
+            {
+                return;
+            }
+
+            if (Status != OrderStatus.Reserving)
+            {
+                throw new InvalidOperationException(
+                    $"Order cannot transition from {Status} to Cancelled after reservation failure.");
+            }
+
+            Status = OrderStatus.Cancelled;
+            UpdatedAt = utcNow;
+        }
     }
 }

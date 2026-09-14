@@ -5,5 +5,9 @@ namespace OrderFlow.Orders.Application.Abstractions.Persistence
     public interface IOrderRepository
     {
         void Add(Order order);
+
+        Task<Order?> GetByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken = default);
     }
 }

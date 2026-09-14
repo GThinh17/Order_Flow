@@ -1,14 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using OrderFlow.Inventory.Application.Abstractions.Persistence;
-using OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
+using OrderFlow.Orders.Application.Abstractions.Persistence;
 
-namespace OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
+namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories;
 
 public sealed class InboxRepository : IInboxRepository
 {
-    private readonly InventoryDbContext _dbContext;
+    private readonly OrdersDbContext _dbContext;
 
-    public InboxRepository(InventoryDbContext dbContext)
+    public InboxRepository(OrdersDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -30,6 +29,9 @@ public sealed class InboxRepository : IInboxRepository
         DateTimeOffset processedAt)
     {
         _dbContext.InboxMessages.Add(
-            new InboxMessage(eventId, eventType, processedAt));
+            new InboxMessage(
+                eventId,
+                eventType,
+                processedAt));
     }
 }

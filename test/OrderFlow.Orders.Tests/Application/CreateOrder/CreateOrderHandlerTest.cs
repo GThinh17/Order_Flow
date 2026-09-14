@@ -13,6 +13,8 @@ public sealed class CreateOrderHandlerTests
     public async Task HandleAsync_WithValidCommand_CreatesOrderAndOutboxMessageThenSavesOnce()
     {
         var repository = new RecordingOrderRepository();
+        var sagaStateRepository =
+            new RecordingOrderSagaStateRepository();
         var unitOfWork = new RecordingUnitOfWork();
         var outboxWriter = new RecordingOutboxWriter();
 
@@ -27,6 +29,7 @@ public sealed class CreateOrderHandlerTests
 
         var handler = new CreateOrderHandler(
             repository,
+            sagaStateRepository,
             unitOfWork,
             outboxWriter,
             new FixedTimeProvider(utcNow));
@@ -57,6 +60,12 @@ public sealed class CreateOrderHandlerTests
         Assert.Equal(utcNow, addedOrder.CreatedAt);
         Assert.Equal(utcNow, addedOrder.UpdatedAt);
 
+        var addedSagaState = Assert.IsType<OrderSagaState>(
+            sagaStateRepository.AddedSagaState);
+        Assert.Equal(result.OrderId, addedSagaState.OrderId);
+        Assert.False(addedSagaState.ReservationCompleted);
+        Assert.False(addedSagaState.PaymentCompleted);
+
         var addedEvent = Assert.IsType<OrderPlaced>(
             outboxWriter.AddedEvent);
         Assert.Equal(result.OrderId, addedEvent.OrderId);
@@ -75,6 +84,37 @@ public sealed class CreateOrderHandlerTests
         public void Add(Order order)
         {
             AddedOrder = order;
+        }
+
+        public Task<Order?> GetByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(
+                AddedOrder?.Id == orderId
+                    ? AddedOrder
+                    : null);
+        }
+    }
+
+    private sealed class RecordingOrderSagaStateRepository
+        : IOrderSagaStateRepository
+    {
+        public OrderSagaState? AddedSagaState { get; private set; }
+
+        public void Add(OrderSagaState sagaState)
+        {
+            AddedSagaState = sagaState;
+        }
+
+        public Task<OrderSagaState?> GetByOrderIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(
+                AddedSagaState?.OrderId == orderId
+                    ? AddedSagaState
+                    : null);
         }
     }
 

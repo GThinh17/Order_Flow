@@ -40,9 +40,20 @@ public static class DependencyInjection
             options => options.UseNpgsql(
                 databaseConnectionString,
                 npgsqlOptions =>
+                {
                     npgsqlOptions.MigrationsHistoryTable(
                         "__ef_migrations_history",
-                        OrdersDbContext.SchemaName)));
+                        OrdersDbContext.SchemaName);
+
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(2),
+                        errorCodesToAdd:
+                        [
+                            "40001",
+                            "40P01"
+                        ]);
+                }));
 
         services.AddScoped<
             IOutboxWriter,
@@ -51,6 +62,18 @@ public static class DependencyInjection
         services.AddScoped<
             IOrderRepository,
             OrderRepository>();
+
+        services.AddScoped<
+            IOrderSagaStateRepository,
+            OrderSagaStateRepository>();
+
+        services.AddScoped<
+            IInboxRepository,
+            InboxRepository>();
+
+        services.AddScoped<
+            IOrdersTransactionRunner,
+            EfOrdersTransactionRunner>();
 
         services.AddScoped<IUnitOfWork>(
             serviceProvider =>
@@ -85,6 +108,22 @@ public static class DependencyInjection
                 options =>
                     !string.IsNullOrWhiteSpace(options.Topic),
                 "Pulsar Topic is missing.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(
+                        options.SubscriptionName),
+                "Pulsar SubscriptionName is missing.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(
+                        options.DeadLetterTopic),
+                "Pulsar DeadLetterTopic is missing.")
+            .Validate(
+                options => options.MaxDeliveryAttempts >= 1,
+                "Pulsar MaxDeliveryAttempts must be at least 1.")
+            .Validate(
+                options => options.RedeliveryDelaySeconds >= 0,
+                "Pulsar RedeliveryDelaySeconds cannot be negative.")
             .ValidateOnStart();
 
         services.AddSingleton<
@@ -93,6 +132,9 @@ public static class DependencyInjection
 
         services.AddHostedService<
             OutboxPublisherWorker>();
+
+        services.AddHostedService<
+            OrdersSagaConsumerWorker>();
 
         return services;
     }

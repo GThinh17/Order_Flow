@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderFlow.Inventory.Application.Abstractions.Persistence;
 using OrderFlow.Inventory.Infrastructure.Health;
 using OrderFlow.Inventory.Infrastructure.Persistence;
+using OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
 using OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
 
 namespace OrderFlow.Inventory.Infrastructure;
@@ -90,6 +91,43 @@ public static class DependencyInjection
             serviceProvider =>
                 serviceProvider.GetRequiredService<
                     InventoryDbContext>());
+
+        services
+            .AddOptions<PulsarOptions>()
+            .Bind(
+                configuration.GetSection(
+                    PulsarOptions.SectionName))
+            .Validate(
+                options => Uri.TryCreate(
+                    options.ServiceURL,
+                    UriKind.Absolute,
+                    out _),
+                "Pulsar ServiceUrl is missing or invalid.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(options.Topic),
+                "Pulsar Topic is required.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(
+                        options.SubscriptionName),
+                "Pulsar SubscriptionName is required.")
+            .Validate(
+                options =>
+                    !string.IsNullOrWhiteSpace(
+                        options.DeadLetterTopic),
+                "Pulsar DeadLetterTopic is required.")
+            .Validate(
+                options =>
+                    options.MaxDeliveryAttempts >= 1,
+                "MaxDeliveryAttempts must be at least 1.")
+            .Validate(
+                options =>
+                    options.RedeliveryDelaySeconds >= 0,
+                "RedeliveryDelaySeconds cannot be negative.")
+            .ValidateOnStart();
+
+        services.AddHostedService<OrderPlacedConsumerWorker>();
 
         return services;
     }

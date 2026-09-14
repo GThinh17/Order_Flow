@@ -1,5 +1,6 @@
 using OrderFlow.Orders.Domain;
 using OrderFlow.Orders.Domain.Entity;
+using OrderFlow.Orders.Domain.Enum;
 
 namespace OrderFlow.Orders.Tests.Domain;
 
@@ -94,5 +95,77 @@ public sealed class OrderTests
             10.001m);
 
         Assert.Throws<ArgumentException>(action);
+    }
+
+    [Fact]
+    public void StartReserving_WhenPending_ChangesStatusToReserving()
+    {
+        var createdAt = DateTimeOffset.UtcNow;
+        var updatedAt = createdAt.AddSeconds(1);
+        var order = CreateValidOrder(createdAt);
+
+        order.StartReserving(updatedAt);
+
+        Assert.Equal(OrderStatus.Reserving, order.Status);
+        Assert.Equal(updatedAt, order.UpdatedAt);
+    }
+
+    [Fact]
+    public void MarkReservationSucceeded_WhenReserving_ChangesStatusToCharging()
+    {
+        var createdAt = DateTimeOffset.UtcNow;
+        var updatedAt = createdAt.AddSeconds(2);
+        var order = CreateValidOrder(createdAt);
+        order.StartReserving(createdAt.AddSeconds(1));
+
+        order.MarkReservationSucceeded(updatedAt);
+
+        Assert.Equal(OrderStatus.Charging, order.Status);
+        Assert.Equal(updatedAt, order.UpdatedAt);
+    }
+
+    [Fact]
+    public void MarkReservationFailed_WhenReserving_ChangesStatusToCancelled()
+    {
+        var createdAt = DateTimeOffset.UtcNow;
+        var order = CreateValidOrder(createdAt);
+        order.StartReserving(createdAt.AddSeconds(1));
+
+        order.MarkReservationFailed(createdAt.AddSeconds(2));
+
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+    }
+
+    [Fact]
+    public void MarkReservationSucceeded_WhenPending_ThrowsInvalidOperationException()
+    {
+        var order = CreateValidOrder(DateTimeOffset.UtcNow);
+
+        var action = () => order.MarkReservationSucceeded(
+            DateTimeOffset.UtcNow);
+
+        Assert.Throws<InvalidOperationException>(action);
+    }
+
+    [Fact]
+    public void MarkReservationFailed_WhenCharging_ThrowsInvalidOperationException()
+    {
+        var order = CreateValidOrder(DateTimeOffset.UtcNow);
+        order.StartReserving(DateTimeOffset.UtcNow);
+        order.MarkReservationSucceeded(DateTimeOffset.UtcNow);
+
+        var action = () => order.MarkReservationFailed(
+            DateTimeOffset.UtcNow);
+
+        Assert.Throws<InvalidOperationException>(action);
+    }
+
+    private static Order CreateValidOrder(
+        DateTimeOffset createdAt)
+    {
+        return Order.Create(
+            "cust-123",
+            [OrderLine.Create("WIDGET-01", 1, 10m)],
+            createdAt);
     }
 }

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using OrderFlow.Contracts.IntegrationEvents.Inventory;
 using OrderFlow.Inventory.Application.Abstractions.Persistence;
+using OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
 
 namespace OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
 

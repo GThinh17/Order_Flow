@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Domain.Entity;
 
@@ -17,6 +18,16 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
         public void Add(Order order)
         {
             _dbContext.Orders.Add(order);
+        }
+
+        public Task<Order?> GetByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return _dbContext.Orders
+                .SingleOrDefaultAsync(
+                    order => order.Id == orderId,
+                    cancellationToken);
         }
     }
 }

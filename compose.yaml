@@ -96,6 +96,10 @@ services:
       Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
       Pulsar__Topic: ${PULSAR_TOPIC}
       Pulsar__LookupPath: ${PULSAR_LOOKUP_PATH}
+      Pulsar__SubscriptionName: ${ORDERS_SUBSCRIPTION_NAME}
+      Pulsar__DeadLetterTopic: ${ORDERS_DLQ_TOPIC}
+      Pulsar__MaxDeliveryAttempts: ${PULSAR_MAX_DELIVERY_ATTEMPTS}
+      Pulsar__RedeliveryDelaySeconds: ${PULSAR_REDELIVERY_DELAY_SECONDS}
     ports:
       - "${ORDERS_HTTP_PORT}:8080"
     depends_on:

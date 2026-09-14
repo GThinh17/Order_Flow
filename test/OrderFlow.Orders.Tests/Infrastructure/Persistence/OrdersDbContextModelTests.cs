@@ -68,6 +68,39 @@ public sealed class OrdersDbContextModelTests
         Assert.Equal("sku", sku.GetColumnName(table));
     }
 
+    [Fact]
+    public void InboxMessage_UsesEventIdAsPrimaryKey()
+    {
+        var entityType = _context.Model.FindEntityType(
+            typeof(InboxMessage));
+        Assert.NotNull(entityType);
+
+        var primaryKey = entityType.FindPrimaryKey();
+        Assert.NotNull(primaryKey);
+        Assert.Equal(
+            nameof(InboxMessage.EventId),
+            Assert.Single(primaryKey.Properties).Name);
+    }
+
+    [Fact]
+    public void OrderSagaState_UsesOrderIdAsPrimaryKeyAndForeignKey()
+    {
+        var entityType = _context.Model.FindEntityType(
+            typeof(OrderSagaState));
+        Assert.NotNull(entityType);
+
+        var primaryKey = entityType.FindPrimaryKey();
+        Assert.NotNull(primaryKey);
+        Assert.Equal(
+            nameof(OrderSagaState.OrderId),
+            Assert.Single(primaryKey.Properties).Name);
+
+        var foreignKey = Assert.Single(entityType.GetForeignKeys());
+        Assert.Equal(
+            nameof(OrderSagaState.OrderId),
+            Assert.Single(foreignKey.Properties).Name);
+    }
+
     private static void AssertColumn(
         IReadOnlyEntityType entityType,
         string propertyName,

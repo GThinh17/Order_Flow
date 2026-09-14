@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
+using OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
 
 namespace OrderFlow.Inventory.Infrastructure.Persistence.Configurations;
 

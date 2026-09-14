@@ -1,10 +1,10 @@
-namespace OrderFlow.Orders.Infrastructure.Messaging
+namespace OrderFlow.Inventory.Infrastructure.Persistence.Messaging
 {
     public sealed class PulsarOptions
     {
         public const string SectionName = "Pulsar";
 
-        public string ServiceUrl { get; set; } = string.Empty;
+        public string ServiceURL { get; set; } = string.Empty;
 
         public string Topic { get; set; } = string.Empty;
 

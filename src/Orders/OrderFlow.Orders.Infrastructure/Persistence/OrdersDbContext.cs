@@ -21,6 +21,11 @@ public sealed class OrdersDbContext
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
 
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+    public DbSet<OrderSagaState> OrderSagaStates => Set<OrderSagaState>();
+
+    public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);

@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OrderFlow.Contracts.IntegrationEvents.Orders;
+using OrderFlow.Orders.Domain.Enum;
 using OrderFlow.Orders.Infrastructure.Persistence;
 
 namespace OrderFlow.Orders.Infrastructure.Messaging
@@ -89,6 +91,11 @@ namespace OrderFlow.Orders.Infrastructure.Messaging
 
             foreach (var message in messages)
             {
+                await MarkOrderAsReservingAsync(
+                    dbContext,
+                    message,
+                    cancellationToken);
+
                 await _eventPublisher.PublishAsync(
                     message.EventId,
                     message.EventType,
@@ -107,6 +114,48 @@ namespace OrderFlow.Orders.Infrastructure.Messaging
                     message.EventId,
                     message.EventType);
             }
+        }
+
+        private async Task MarkOrderAsReservingAsync(
+            OrdersDbContext dbContext,
+            Persistence.Repositories.OutboxMessage message,
+            CancellationToken cancellationToken)
+        {
+            if (!string.Equals(
+                    message.EventType,
+                    nameof(OrderPlaced),
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!Guid.TryParse(
+                    message.PartitionKey,
+                    out var orderId))
+            {
+                throw new InvalidOperationException(
+                    $"Outbox message '{message.EventId}' has an invalid order partition key.");
+            }
+
+            var order = await dbContext.Orders
+                .SingleOrDefaultAsync(
+                    entity => entity.Id == orderId,
+                    cancellationToken)
+                ?? throw new InvalidOperationException(
+                    $"Order '{orderId}' was not found for outbox message '{message.EventId}'.");
+
+            // A previous publish may have succeeded before the process
+            // crashed while marking the outbox row as published.
+            if (order.Status != OrderStatus.Pending)
+            {
+                return;
+            }
+
+            order.StartReserving(
+                _timeProvider.GetUtcNow());
+
+            await dbContext.SaveChangesAsync(
+                cancellationToken);
         }
     }
 }

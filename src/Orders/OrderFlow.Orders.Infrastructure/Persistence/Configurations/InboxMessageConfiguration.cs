@@ -1,13 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
+using OrderFlow.Orders.Infrastructure.Persistence.Repositories;
 
-namespace OrderFlow.Inventory.Infrastructure.Persistence.Configurations;
+namespace OrderFlow.Orders.Infrastructure.Persistence.Configuration;
 
 public sealed class InboxMessageConfiguration
     : IEntityTypeConfiguration<InboxMessage>
 {
-    public void Configure(EntityTypeBuilder<InboxMessage> builder)
+    public void Configure(
+        EntityTypeBuilder<InboxMessage> builder)
     {
         builder.ToTable("inbox_messages");
 
