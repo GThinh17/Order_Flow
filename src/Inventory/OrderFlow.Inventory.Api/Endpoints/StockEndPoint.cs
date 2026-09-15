@@ -1,5 +1,6 @@
 
 using OrderFlow.Inventory.Api.Contracts;
+using OrderFlow.Inventory.Application.Handler;
 using OrderFlow.Inventory.Application.InventoryCommand;
 using OrderFlow.Inventory.Application.Stock;
 

@@ -1,4 +1,5 @@
 using OrderFlow.Orders.Api.Contract.Orders;
+using OrderFlow.Orders.Application.Handler;
 using OrderFlow.Orders.Application.OrderCommand;
 
 namespace OrderFlow.Orders.Api.Endpoints.Orders;

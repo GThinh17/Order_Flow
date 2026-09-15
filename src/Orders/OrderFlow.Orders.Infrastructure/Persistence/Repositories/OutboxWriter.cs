@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using OrderFlow.Contracts.IntegrationEvents.Orders;
-using OrderFlow.Orders.Application.Abstractions.Messaging;
+using OrderFlow.Orders.Application.Messaging;
 
 namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
 {

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OrderFlow.Contracts.IntegrationEvents.Orders;
-using OrderFlow.Inventory.Application.InventoryCommand;
+using OrderFlow.Inventory.Application.Handler;
 
 namespace OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
 

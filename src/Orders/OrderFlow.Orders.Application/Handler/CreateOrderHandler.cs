@@ -1,9 +1,10 @@
 using OrderFlow.Contracts.IntegrationEvents.Orders;
-using OrderFlow.Orders.Application.Abstractions.Messaging;
+using OrderFlow.Orders.Application.Messaging;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
+using OrderFlow.Orders.Application.OrderCommand;
 using OrderFlow.Orders.Domain.Entity;
 
-namespace OrderFlow.Orders.Application.OrderCommand
+namespace OrderFlow.Orders.Application.Handler
 {
     public sealed class CreateOrderHandler
     {

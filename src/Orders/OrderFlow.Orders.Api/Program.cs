@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OrderFlow.Orders.Api.Endpoints.Orders;
+using OrderFlow.Orders.Application.Handler;
 using OrderFlow.Orders.Application.OrderCommand;
 using OrderFlow.Orders.Infrastructure;
 

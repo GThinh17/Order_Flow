@@ -3,7 +3,7 @@ using OrderFlow.Contracts.IntegrationEvents.Orders;
 using OrderFlow.Inventory.Application.Abstractions.Persistence;
 using OrderFlow.Inventory.Domain.Entity;
 
-namespace OrderFlow.Inventory.Application.InventoryCommand
+namespace OrderFlow.Inventory.Application.Handler
 {
     public sealed class ReserveOrderHandler
     {

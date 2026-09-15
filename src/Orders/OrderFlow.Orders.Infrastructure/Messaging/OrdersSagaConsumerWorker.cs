@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OrderFlow.Contracts.IntegrationEvents.Inventory;
+using OrderFlow.Orders.Application.Handler;
 using OrderFlow.Orders.Application.OrderCommand;
 
 namespace OrderFlow.Orders.Infrastructure.Messaging;
@@ -140,34 +141,34 @@ public sealed class OrdersSagaConsumerWorker : BackgroundService
         switch (eventType)
         {
             case nameof(ReservationSucceeded):
-            {
-                var integrationEvent = Deserialize<ReservationSucceeded>(
-                    message.Value());
+                {
+                    var integrationEvent = Deserialize<ReservationSucceeded>(
+                        message.Value());
 
-                var handler = scope.ServiceProvider
-                    .GetRequiredService<ReservationSucceededHandler>();
+                    var handler = scope.ServiceProvider
+                        .GetRequiredService<ReservationSucceededHandler>();
 
-                await handler.HandleAsync(
-                    integrationEvent,
-                    cancellationToken);
+                    await handler.HandleAsync(
+                        integrationEvent,
+                        cancellationToken);
 
-                break;
-            }
+                    break;
+                }
 
             case nameof(ReservationFailed):
-            {
-                var integrationEvent = Deserialize<ReservationFailed>(
-                    message.Value());
+                {
+                    var integrationEvent = Deserialize<ReservationFailed>(
+                        message.Value());
 
-                var handler = scope.ServiceProvider
-                    .GetRequiredService<ReservationFailedHandler>();
+                    var handler = scope.ServiceProvider
+                        .GetRequiredService<ReservationFailedHandler>();
 
-                await handler.HandleAsync(
-                    integrationEvent,
-                    cancellationToken);
+                    await handler.HandleAsync(
+                        integrationEvent,
+                        cancellationToken);
 
-                break;
-            }
+                    break;
+                }
 
             default:
                 _logger.LogDebug(

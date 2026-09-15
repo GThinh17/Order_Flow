@@ -1,5 +1,5 @@
 using OrderFlow.Inventory.Api.Endpoints;
-using OrderFlow.Inventory.Application.InventoryCommand;
+using OrderFlow.Inventory.Application.Handler;
 using OrderFlow.Inventory.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
