@@ -11,13 +11,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DEFAULT_DB}
       ORDERS_DB_NAME: ${ORDERS_DB_NAME}
       ORDERS_DB_USER: ${ORDERS_DB_USER}
-      ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD}
+      ORDERS_DB_PASSWORD: orders_dev_password
       INVENTORY_DB_NAME: ${INVENTORY_DB_NAME}
       INVENTORY_DB_USER: ${INVENTORY_DB_USER}
-      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD}
+      INVENTORY_DB_PASSWORD: inventory_dev_password
       PAYMENTS_DB_NAME: ${PAYMENTS_DB_NAME}
       PAYMENTS_DB_USER: ${PAYMENTS_DB_USER}
-      PAYMENTS_DB_PASSWORD: ${PAYMENTS_DB_PASSWORD}
+      PAYMENTS_DB_PASSWORD: payments_dev_password
     ports:
       - "5432:5432"
     volumes:
@@ -88,10 +88,8 @@ services:
     container_name: orderflow-orders-api
     restart: unless-stopped
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Docker
       ASPNETCORE_URLS: http://+:8080
-      Database__ConnectionString: >-
-        Host=postgres;Port=5432;Database=${ORDERS_DB_NAME};Username=${ORDERS_DB_USER};Password=${ORDERS_DB_PASSWORD}
       Pulsar__AdminUrl: ${PULSAR_ADMIN_URL}
       Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
       Pulsar__Topic: ${PULSAR_TOPIC}
@@ -115,10 +113,8 @@ services:
     container_name: orderflow-inventory-api
     restart: unless-stopped
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Docker
       ASPNETCORE_URLS: http://+:8080
-      Database__ConnectionString: >-
-        Host=postgres;Port=5432;Database=${INVENTORY_DB_NAME};Username=${INVENTORY_DB_USER};Password=${INVENTORY_DB_PASSWORD}
       Pulsar__AdminUrl: ${PULSAR_ADMIN_URL}
       Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
       Pulsar__Topic: ${PULSAR_TOPIC}
@@ -138,10 +134,8 @@ services:
     container_name: orderflow-payments-api
     restart: unless-stopped
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Docker
       ASPNETCORE_URLS: http://+:8080
-      Database__ConnectionString: >-
-        Host=postgres;Port=5432;Database=${PAYMENTS_DB_NAME};Username=${PAYMENTS_DB_USER};Password=${PAYMENTS_DB_PASSWORD}
       Pulsar__AdminUrl: ${PULSAR_ADMIN_URL}
       Pulsar__ServiceUrl: ${PULSAR_SERVICE_URL}
       Pulsar__Topic: ${PULSAR_TOPIC}

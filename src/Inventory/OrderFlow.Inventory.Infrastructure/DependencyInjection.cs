@@ -129,6 +129,12 @@ public static class DependencyInjection
 
         services.AddHostedService<OrderPlacedConsumerWorker>();
 
+        services.AddSingleton<
+            IInventoryEventPublisher,
+            PulsarInventoryEventPublisher>();
+
+        services.AddHostedService<InventoryOutboxPublisherWorker>();
+
         return services;
     }
 }
