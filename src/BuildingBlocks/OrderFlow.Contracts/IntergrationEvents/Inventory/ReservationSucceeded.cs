@@ -6,5 +6,6 @@ namespace OrderFlow.Contracts.IntegrationEvents.Inventory
         Guid CorrelationId,
         DateTimeOffset Timestamp,
         Guid ReservationId,
+        decimal Total,
         IReadOnlyCollection<ReservedLine> Lines);
 }

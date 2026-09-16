@@ -15,7 +15,7 @@ namespace OrderFlow.Inventory.Application.Handler
             _reservationRepository;
         private readonly IInboxRepository
             _inboxRepository;
-        private readonly IInventoryOutboxWriter
+        private readonly IOutboxWriter
             _inventoryOutboxWriter;
         private readonly TimeProvider
             _timeProvider;
@@ -25,7 +25,7 @@ namespace OrderFlow.Inventory.Application.Handler
             IStockRepository stockRepository,
             IReservationRepository reservationRepository,
             IInboxRepository inboxRepository,
-            IInventoryOutboxWriter inventoryOutboxWriter,
+            IOutboxWriter inventoryOutboxWriter,
             TimeProvider timeProvider)
         {
             _inventoryTransactionRunner = inventoryTransactionRunner;
@@ -179,6 +179,7 @@ namespace OrderFlow.Inventory.Application.Handler
                     orderPlaced.CorrelationId,
                     utcNow,
                     reservationId,
+                    orderPlaced.Total,
                     requestedLines
                         .Select(line => new ReservedLine(
                             line.Sku,

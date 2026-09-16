@@ -6,7 +6,7 @@ using OrderFlow.Inventory.Domain.Entity;
 
 namespace OrderFlow.Inventory.Infrastructure.Persistence.Repositories;
 
-public sealed class InventoryOutboxWriter : IInventoryOutboxWriter
+public sealed class InventoryOutboxWriter : IOutboxWriter
 {
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);

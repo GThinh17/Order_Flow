@@ -128,6 +128,7 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                 orderId,
                 UtcNow,
                 Guid.NewGuid(),
+                6,
                 [new ReservedLine("WIDGET-01", 2)]);
         }
 

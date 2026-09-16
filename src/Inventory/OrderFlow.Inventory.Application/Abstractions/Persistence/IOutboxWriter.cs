@@ -2,7 +2,7 @@ using OrderFlow.Contracts.IntegrationEvents.Inventory;
 
 namespace OrderFlow.Inventory.Application.Abstractions.Persistence
 {
-    public interface IInventoryOutboxWriter
+    public interface IOutboxWriter
     {
         void Add(ReservationSucceeded integrationEvent);
 

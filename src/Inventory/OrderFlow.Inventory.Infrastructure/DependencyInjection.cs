@@ -84,7 +84,7 @@ public static class DependencyInjection
             ReservationRepository>();
 
         services.AddScoped<
-            IInventoryOutboxWriter,
+            IOutboxWriter,
             InventoryOutboxWriter>();
 
         services.AddScoped<IUnitOfWork>(

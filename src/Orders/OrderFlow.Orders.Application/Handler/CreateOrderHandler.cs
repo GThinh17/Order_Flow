@@ -1,5 +1,4 @@
 using OrderFlow.Contracts.IntegrationEvents.Orders;
-using OrderFlow.Orders.Application.Messaging;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Application.OrderCommand;
 using OrderFlow.Orders.Domain.Entity;

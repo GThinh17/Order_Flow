@@ -1,8 +1,8 @@
-namespace OrderFlow.Orders.Application.Abstractions.Persistence
+namespace OrderFlow.Payments.Application.Abstractions.Persistence
 {
     public interface IInboxRepository
     {
-        Task<bool> ExistsAsync(
+        Task<bool> ExistAsync(
             Guid eventId,
             CancellationToken cancellationToken = default);
 

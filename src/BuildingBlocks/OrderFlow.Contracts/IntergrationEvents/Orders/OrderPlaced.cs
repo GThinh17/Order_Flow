@@ -7,7 +7,7 @@ namespace OrderFlow.Contracts.IntegrationEvents.Orders
         Guid CorrelationId,
         DateTimeOffset Timestamp,
         string CustomerId,
-        decimal TotalAmount,
+        decimal Total,
         IReadOnlyCollection<OrderPlacedLine> Lines);
 
     public sealed record OrderPlacedLine(

@@ -1,6 +1,6 @@
 using OrderFlow.Contracts.IntegrationEvents.Orders;
 
-namespace OrderFlow.Orders.Application.Messaging
+namespace OrderFlow.Orders.Application.Abstractions.Persistence
 {
     public interface IOutboxWriter
     {

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Payments\OrderFlow.Payments.Application\OrderFlow.Payments.Application.csproj" />
     <ProjectReference Include="..\..\src\Payments\OrderFlow.Payments.Domain\OrderFlow.Payments.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Payments\OrderFlow.Payments.Infrastructure\OrderFlow.Payments.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

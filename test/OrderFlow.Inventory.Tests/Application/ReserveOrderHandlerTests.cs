@@ -139,7 +139,7 @@ namespace OrderFlow.Inventory.Tests.Application
             IStockRepository stockRepository,
             IReservationRepository reservationRepository,
             IInboxRepository inboxRepository,
-            IInventoryOutboxWriter outboxWriter)
+            IOutboxWriter outboxWriter)
         {
             return new ReserveOrderHandler(
                 transactionRunner,
@@ -237,7 +237,7 @@ namespace OrderFlow.Inventory.Tests.Application
             }
         }
 
-        private sealed class FakeOutboxWriter : IInventoryOutboxWriter
+        private sealed class FakeOutboxWriter : IOutboxWriter
         {
             public List<ReservationSucceeded> Succeeded { get; } = [];
             public List<ReservationFailed> Failed { get; } = [];
