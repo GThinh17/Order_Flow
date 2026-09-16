@@ -128,5 +128,41 @@ namespace OrderFlow.Orders.Domain.Entity
             Status = OrderStatus.Cancelled;
             UpdatedAt = utcNow;
         }
+
+        public void MarkPaymentSucceeded(
+            DateTimeOffset utcNow)
+        {
+            if (Status == OrderStatus.Confirmed)
+            {
+                return;
+            }
+
+            if (Status != OrderStatus.Charging)
+            {
+                throw new InvalidOperationException(
+                    $"Order cannot transition from {Status} to Confirmed.");
+            }
+
+            Status = OrderStatus.Confirmed;
+            UpdatedAt = utcNow;
+        }
+        public void MarkPaymentFailed(
+            DateTimeOffset utcNow)
+        {
+            if (Status == OrderStatus.Cancelled)
+            {
+                return;
+            }
+
+            if (Status != OrderStatus.Charging)
+            {
+                throw new InvalidOperationException(
+                    $"Order cannot transition from {Status} " +
+                    "to Cancelled after payment failure.");
+            }
+
+            Status = OrderStatus.Cancelled;
+            UpdatedAt = utcNow;
+        }
     }
 }

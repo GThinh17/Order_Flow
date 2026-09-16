@@ -3,6 +3,7 @@ using OrderFlow.Contracts.IntegrationEvents.Orders;
 using OrderFlow.Inventory.Application.Abstractions.Persistence;
 using OrderFlow.Inventory.Application.Handler;
 using OrderFlow.Inventory.Domain.Entity;
+using OrderFlow.Inventory.Domain.Enum;
 
 namespace OrderFlow.Inventory.Tests.Application
 {
@@ -210,6 +211,19 @@ namespace OrderFlow.Inventory.Tests.Application
         private sealed class FakeReservationRepository : IReservationRepository
         {
             public List<Reservation> Items { get; } = [];
+
+            public Task<IReadOnlyList<Reservation>> GetActiveByOrderIdAsync(
+                Guid orderId,
+                CancellationToken cancellationToken = default)
+            {
+                IReadOnlyList<Reservation> activeReservations = Items
+                    .Where(reservation =>
+                        reservation.OrderId == orderId &&
+                        reservation.Status == ReservationStatus.Active)
+                    .ToList();
+
+                return Task.FromResult(activeReservations);
+            }
 
             public void Add(Reservation reservation)
             {

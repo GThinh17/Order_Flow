@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Payments.Application.Abstractions.Persistence;
-using OrderFlow.Payments.Domain.Entity;
 using OrderFlow.Payments.Infrastructure.Persistence;
+using OrderFlow.Payments.Infrastructure.Persistence.Models;
 
 namespace OrderFlow.Payments.Infrastructure.Persistence.Repositories
 {

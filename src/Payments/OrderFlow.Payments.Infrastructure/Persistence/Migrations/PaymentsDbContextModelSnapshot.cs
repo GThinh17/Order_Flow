@@ -23,7 +23,7 @@ namespace OrderFlow.Payments.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("OrderFlow.Payments.Domain.Entity.InboxMessage", b =>
+            modelBuilder.Entity("OrderFlow.Payments.Infrastructure.Persistence.Models.InboxMessage", b =>
                 {
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid")

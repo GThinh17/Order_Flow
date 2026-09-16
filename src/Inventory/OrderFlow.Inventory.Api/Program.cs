@@ -10,6 +10,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<GetStockHandler>();
 builder.Services.AddScoped<AdjustStockHandler>();
 builder.Services.AddScoped<ReserveOrderHandler>();
+builder.Services.AddScoped<ConsumeReservationHandler>();
+builder.Services.AddScoped<ReleaseReservationHandler>();
+
 
 var app = builder.Build();
 

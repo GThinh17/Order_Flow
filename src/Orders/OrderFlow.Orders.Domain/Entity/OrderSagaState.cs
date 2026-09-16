@@ -43,5 +43,29 @@ public sealed class OrderSagaState
         ReservationCompleted = true;
         LastProcessedEventId = eventId;
     }
+    public void CompletePayment(Guid eventId)
+    {
+        if (eventId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Event ID is required.",
+                nameof(eventId));
+        }
+
+        PaymentCompleted = true;
+        LastProcessedEventId = eventId;
+    }
+    public void RecordPaymentFailure(Guid eventId)
+    {
+        if (eventId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Event ID is required.",
+                nameof(eventId));
+        }
+
+        PaymentCompleted = false;
+        LastProcessedEventId = eventId;
+    }
 
 }

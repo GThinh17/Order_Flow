@@ -1,4 +1,4 @@
-namespace OrderFlow.Payments.Domain.Entity;
+namespace OrderFlow.Inventory.Infrastructure.Persistence.Models;
 
 public sealed class InboxMessage
 {

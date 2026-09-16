@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OrderFlow.Contracts.IntegrationEvents.Orders;
+using OrderFlow.Contracts.IntegrationEvents.Payments;
 using OrderFlow.Inventory.Application.Handler;
 
 namespace OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
@@ -134,41 +135,76 @@ public sealed class OrderPlacedConsumerWorker : BackgroundService
                 "Pulsar message does not contain eventType.");
         }
 
-        // Topic được dùng chung nên Inventory phải bỏ qua event
-        // thuộc Orders hoặc Payments.
-        if (!string.Equals(
-                eventType,
-                nameof(OrderPlaced),
-                StringComparison.Ordinal))
-        {
-            _logger.LogDebug(
-                "Inventory ignored event type {EventType}.",
-                eventType);
-
-            return;
-        }
-
-        var orderPlaced =
-            JsonSerializer.Deserialize<OrderPlaced>(
-                message.Value(),
-                JsonOptions)
-            ?? throw new JsonException(
-                "OrderPlaced payload is null.");
-
         await using var scope =
             _scopeFactory.CreateAsyncScope();
 
-        var handler = scope.ServiceProvider
-            .GetRequiredService<ReserveOrderHandler>();
+        switch (eventType)
+        {
+            case nameof(OrderPlaced):
+                {
+                    var integrationEvent =
+                        Deserialize<OrderPlaced>(
+                            message.Value());
 
-        await handler.HandleAsync(
-            orderPlaced,
-            cancellationToken);
+                    var handler = scope.ServiceProvider
+                        .GetRequiredService<ReserveOrderHandler>();
 
-        _logger.LogInformation(
-            "Inventory processed OrderPlaced {EventId} for order {OrderId}.",
-            orderPlaced.EventId,
-            orderPlaced.OrderId);
+                    await handler.HandleAsync(
+                        integrationEvent,
+                        cancellationToken);
+
+                    break;
+                }
+
+            case nameof(PaymentSucceeded):
+                {
+                    var integrationEvent =
+                        Deserialize<PaymentSucceeded>(
+                            message.Value());
+
+                    var handler = scope.ServiceProvider
+                        .GetRequiredService<ConsumeReservationHandler>();
+
+                    await handler.HandleAsync(
+                        integrationEvent,
+                        cancellationToken);
+
+                    break;
+                }
+
+            case nameof(PaymentFailed):
+                {
+                    var integrationEvent =
+                        Deserialize<PaymentFailed>(
+                            message.Value());
+
+                    var handler = scope.ServiceProvider
+                        .GetRequiredService<ReleaseReservationHandler>();
+
+                    await handler.HandleAsync(
+                        integrationEvent,
+                        cancellationToken);
+
+                    break;
+                }
+
+            default:
+                _logger.LogDebug(
+                    "Inventory ignored event type {EventType}.",
+                    eventType);
+
+                break;
+        }
+    }
+
+    private static TEvent Deserialize<TEvent>(
+        string payload)
+    {
+        return JsonSerializer.Deserialize<TEvent>(
+                payload,
+                JsonOptions)
+            ?? throw new JsonException(
+                $"{typeof(TEvent).Name} payload is null.");
     }
 
     private async Task HandleFailedMessageAsync(

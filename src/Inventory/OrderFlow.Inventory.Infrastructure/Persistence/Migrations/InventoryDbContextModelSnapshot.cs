@@ -103,7 +103,7 @@ namespace OrderFlow.Inventory.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("OrderFlow.Inventory.Infrastructure.Persistence.Repositories.InboxMessage", b =>
+            modelBuilder.Entity("OrderFlow.Inventory.Infrastructure.Persistence.Models.InboxMessage", b =>
                 {
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid")
@@ -124,7 +124,7 @@ namespace OrderFlow.Inventory.Infrastructure.Persistence.Migrations
                     b.ToTable("inbox_messages", "orderflow_inventory");
                 });
 
-            modelBuilder.Entity("OrderFlow.Inventory.Infrastructure.Persistence.Repositories.OutboxMessage", b =>
+            modelBuilder.Entity("OrderFlow.Inventory.Infrastructure.Persistence.Models.OutboxMessage", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()

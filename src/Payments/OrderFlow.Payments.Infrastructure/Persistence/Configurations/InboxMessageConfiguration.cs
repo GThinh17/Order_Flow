@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using OrderFlow.Payments.Domain.Entity;
+using OrderFlow.Payments.Infrastructure.Persistence.Models;
 
 namespace OrderFlow.Payments.Infrastructure.Persistence.Configurations;
 
