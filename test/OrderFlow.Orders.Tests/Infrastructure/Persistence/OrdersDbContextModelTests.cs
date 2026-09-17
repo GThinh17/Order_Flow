@@ -17,13 +17,16 @@ public sealed class OrdersDbContextModelTests
     [Fact]
     public void OutboxMessage_UsesExpectedColumnsAndNullablePublishedAt()
     {
-        var entityType = _context.Model.FindEntityType(typeof(OutboxMessage));
-        Assert.NotNull(entityType);
-
+        // Arrange
         var table = StoreObjectIdentifier.Table(
             "out_messages",
             OrdersDbContext.SchemaName);
 
+        // Act
+        var entityType = _context.Model.FindEntityType(typeof(OutboxMessage));
+
+        // Assert
+        Assert.NotNull(entityType);
         AssertColumn(entityType, nameof(OutboxMessage.EventId), "event_id", table);
         AssertColumn(entityType, nameof(OutboxMessage.PartitionKey), "partition_key", table);
         AssertColumn(entityType, nameof(OutboxMessage.CreatedAt), "created_at", table);
@@ -35,13 +38,16 @@ public sealed class OrdersDbContextModelTests
     [Fact]
     public void Order_UsesConventionalTimestampColumns()
     {
-        var entityType = _context.Model.FindEntityType(typeof(Order));
-        Assert.NotNull(entityType);
-
+        // Arrange
         var table = StoreObjectIdentifier.Table(
             "orders",
             OrdersDbContext.SchemaName);
 
+        // Act
+        var entityType = _context.Model.FindEntityType(typeof(Order));
+
+        // Assert
+        Assert.NotNull(entityType);
         AssertColumn(entityType, nameof(Order.CreatedAt), "created_at", table);
         AssertColumn(entityType, nameof(Order.UpdatedAt), "updated_at", table);
     }
@@ -49,20 +55,23 @@ public sealed class OrdersDbContextModelTests
     [Fact]
     public void OrderLine_UsesIntegerQuantityAndMappedSku()
     {
-        var entityType = _context.Model.FindEntityType(typeof(OrderLine));
-        Assert.NotNull(entityType);
-
+        // Arrange
         var table = StoreObjectIdentifier.Table(
             "order_lines",
             OrdersDbContext.SchemaName);
 
-        var quantity = entityType.FindProperty(nameof(OrderLine.Quantity));
+        // Act
+        var entityType = _context.Model.FindEntityType(typeof(OrderLine));
+        var quantity = entityType?.FindProperty(nameof(OrderLine.Quantity));
+        var sku = entityType?.FindProperty(nameof(OrderLine.Sku));
+
+        // Assert
+        Assert.NotNull(entityType);
         Assert.NotNull(quantity);
         Assert.Equal(typeof(int), quantity.ClrType);
         Assert.Equal("integer", quantity.GetColumnType());
         Assert.Equal("quantity", quantity.GetColumnName(table));
 
-        var sku = entityType.FindProperty(nameof(OrderLine.Sku));
         Assert.NotNull(sku);
         Assert.Equal(50, sku.GetMaxLength());
         Assert.Equal("sku", sku.GetColumnName(table));
@@ -71,33 +80,45 @@ public sealed class OrdersDbContextModelTests
     [Fact]
     public void InboxMessage_UsesEventIdAsPrimaryKey()
     {
+        // Arrange
+        const string expectedPropertyName = nameof(InboxMessage.EventId);
+
+        // Act
         var entityType = _context.Model.FindEntityType(
             typeof(InboxMessage));
-        Assert.NotNull(entityType);
+        var primaryKey = entityType?.FindPrimaryKey();
 
-        var primaryKey = entityType.FindPrimaryKey();
+        // Assert
+        Assert.NotNull(entityType);
         Assert.NotNull(primaryKey);
         Assert.Equal(
-            nameof(InboxMessage.EventId),
+            expectedPropertyName,
             Assert.Single(primaryKey.Properties).Name);
     }
 
     [Fact]
     public void OrderSagaState_UsesOrderIdAsPrimaryKeyAndForeignKey()
     {
+        // Arrange
+        const string expectedPropertyName = nameof(OrderSagaState.OrderId);
+
+        // Act
         var entityType = _context.Model.FindEntityType(
             typeof(OrderSagaState));
-        Assert.NotNull(entityType);
+        var primaryKey = entityType?.FindPrimaryKey();
+        var foreignKeys = entityType?.GetForeignKeys().ToArray();
 
-        var primaryKey = entityType.FindPrimaryKey();
+        // Assert
+        Assert.NotNull(entityType);
         Assert.NotNull(primaryKey);
         Assert.Equal(
-            nameof(OrderSagaState.OrderId),
+            expectedPropertyName,
             Assert.Single(primaryKey.Properties).Name);
 
-        var foreignKey = Assert.Single(entityType.GetForeignKeys());
+        Assert.NotNull(foreignKeys);
+        var foreignKey = Assert.Single(foreignKeys);
         Assert.Equal(
-            nameof(OrderSagaState.OrderId),
+            expectedPropertyName,
             Assert.Single(foreignKey.Properties).Name);
     }
 

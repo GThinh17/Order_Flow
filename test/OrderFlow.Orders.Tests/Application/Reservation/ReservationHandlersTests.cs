@@ -15,6 +15,7 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
         [Fact]
         public async Task ReservationSucceeded_MovesOrderToChargingAndCompletesSaga()
         {
+            // Arrange
             var order = CreateReservingOrder();
             var sagaState = OrderSagaState.Create(order.Id);
             var inbox = new FakeInboxRepository();
@@ -27,8 +28,10 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                 inbox,
                 new FixedTimeProvider(UtcNow));
 
+            // Act
             await handler.HandleAsync(integrationEvent);
 
+            // Assert
             Assert.Equal(OrderStatus.Charging, order.Status);
             Assert.True(sagaState.ReservationCompleted);
             Assert.Equal(
@@ -41,6 +44,7 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
         [Fact]
         public async Task ReservationFailed_MovesOrderToCancelledAndCompletesSaga()
         {
+            // Arrange
             var order = CreateReservingOrder();
             var sagaState = OrderSagaState.Create(order.Id);
             var inbox = new FakeInboxRepository();
@@ -57,8 +61,10 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                 inbox,
                 new FixedTimeProvider(UtcNow));
 
+            // Act
             await handler.HandleAsync(integrationEvent);
 
+            // Assert
             Assert.Equal(OrderStatus.Cancelled, order.Status);
             Assert.True(sagaState.ReservationCompleted);
             Assert.False(sagaState.PaymentCompleted);
@@ -68,6 +74,7 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
         [Fact]
         public async Task DuplicateReservationEvent_DoesNotChangeOrderAgain()
         {
+            // Arrange
             var order = CreateReservingOrder();
             var sagaState = OrderSagaState.Create(order.Id);
             var inbox = new FakeInboxRepository();
@@ -83,8 +90,10 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                 inbox,
                 new FixedTimeProvider(UtcNow));
 
+            // Act
             await handler.HandleAsync(integrationEvent);
 
+            // Assert
             Assert.Equal(OrderStatus.Reserving, order.Status);
             Assert.False(sagaState.ReservationCompleted);
             Assert.Single(inbox.EventIds);
@@ -93,6 +102,7 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
         [Fact]
         public async Task ReservationSucceeded_WhenOrderIsMissing_Throws()
         {
+            // Arrange
             var orderId = Guid.NewGuid();
             var handler = new ReservationSucceededHandler(
                 new FakeTransactionRunner(),
@@ -102,9 +112,11 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                 new FakeInboxRepository(),
                 new FixedTimeProvider(UtcNow));
 
+            // Act
             var action = () => handler.HandleAsync(
                 CreateReservationSucceeded(orderId));
 
+            // Assert
             await Assert.ThrowsAsync<InvalidOperationException>(action);
         }
 

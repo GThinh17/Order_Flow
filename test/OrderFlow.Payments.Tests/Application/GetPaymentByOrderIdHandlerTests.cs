@@ -9,6 +9,7 @@ public sealed class GetPaymentByOrderIdHandlerTests
     [Fact]
     public async Task HandleAsync_WhenPaymentExists_ReturnsResponse()
     {
+        // Arrange
         var orderId = Guid.NewGuid();
         var payment = Payment.CreateSucceeded(
             orderId,
@@ -17,8 +18,10 @@ public sealed class GetPaymentByOrderIdHandlerTests
         var handler = new GetPaymentByOrderIdHandler(
             new FakePaymentRepository(payment));
 
+        // Act
         var response = await handler.HandleAsync(orderId);
 
+        // Assert
         Assert.NotNull(response);
         Assert.Equal(payment.Id, response.PaymentId);
         Assert.Equal(orderId, response.OrderId);
@@ -29,11 +32,14 @@ public sealed class GetPaymentByOrderIdHandlerTests
     [Fact]
     public async Task HandleAsync_WhenPaymentDoesNotExist_ReturnsNull()
     {
+        // Arrange
         var handler = new GetPaymentByOrderIdHandler(
             new FakePaymentRepository());
 
+        // Act
         var response = await handler.HandleAsync(Guid.NewGuid());
 
+        // Assert
         Assert.Null(response);
     }
 

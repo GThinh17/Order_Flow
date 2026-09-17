@@ -17,6 +17,7 @@ public sealed class ProcessReservationSucceededHandlerTests
     [Fact]
     public async Task HandleAsync_WhenGatewaySucceeds_PersistsPaymentAndSuccessEvent()
     {
+        // Arrange
         var gateway = new FakePaymentGateway(
             PaymentGateWayResult.Success());
         var paymentRepository = new FakePaymentRepository();
@@ -29,8 +30,10 @@ public sealed class ProcessReservationSucceededHandlerTests
             outboxWriter);
         var integrationEvent = CreateEvent(25.50m);
 
+        // Act
         await handler.HandleAsync(integrationEvent);
 
+        // Assert
         var payment = Assert.Single(paymentRepository.Payments);
         Assert.Equal(integrationEvent.OrderId, payment.OrderId);
         Assert.Equal(integrationEvent.Total, payment.Amount);
@@ -47,6 +50,7 @@ public sealed class ProcessReservationSucceededHandlerTests
     [Fact]
     public async Task HandleAsync_WhenGatewayFails_PersistsPaymentAndFailureEvent()
     {
+        // Arrange
         const string failureReason = "Payment was declined.";
         var gateway = new FakePaymentGateway(
             PaymentGateWayResult.Failure(failureReason));
@@ -60,8 +64,10 @@ public sealed class ProcessReservationSucceededHandlerTests
             outboxWriter);
         var integrationEvent = CreateEvent(25.99m);
 
+        // Act
         await handler.HandleAsync(integrationEvent);
 
+        // Assert
         var payment = Assert.Single(paymentRepository.Payments);
         Assert.Equal(Status.Failed, payment.Status);
         Assert.Equal(failureReason, payment.FailureReason);
@@ -76,6 +82,7 @@ public sealed class ProcessReservationSucceededHandlerTests
     [Fact]
     public async Task HandleAsync_WhenEventWasProcessed_DoesNotChargeAgain()
     {
+        // Arrange
         var integrationEvent = CreateEvent(25.50m);
         var gateway = new FakePaymentGateway(
             PaymentGateWayResult.Success());
@@ -89,8 +96,10 @@ public sealed class ProcessReservationSucceededHandlerTests
             inboxRepository,
             outboxWriter);
 
+        // Act
         await handler.HandleAsync(integrationEvent);
 
+        // Assert
         Assert.Equal(0, gateway.CallCount);
         Assert.Empty(paymentRepository.Payments);
         Assert.Empty(outboxWriter.Succeeded);

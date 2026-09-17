@@ -12,12 +12,15 @@ public sealed class PaymentGatewayTests
         decimal amount,
         bool expectedSuccess)
     {
+        // Arrange
         var gateway = new PaymentGateway();
 
+        // Act
         var result = await gateway.ChargeAsync(
             Guid.NewGuid(),
             amount);
 
+        // Assert
         Assert.Equal(expectedSuccess, result.IsSuccessful);
         Assert.Equal(
             expectedSuccess,

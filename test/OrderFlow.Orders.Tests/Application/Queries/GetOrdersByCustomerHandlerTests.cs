@@ -9,6 +9,7 @@ public sealed class GetOrdersByCustomerHandlerTests
     [Fact]
     public async Task HandleAsync_WithMatchingCustomer_ReturnsSummaries()
     {
+        // Arrange
         var createdAt = new DateTimeOffset(
             2026,
             9,
@@ -33,8 +34,10 @@ public sealed class GetOrdersByCustomerHandlerTests
                 matchingOrder,
                 otherOrder));
 
+        // Act
         var results = await handler.HandleAsync(" customer-1 ");
 
+        // Assert
         var result = Assert.Single(results);
 
         Assert.Equal(matchingOrder.Id, result.OrderId);
@@ -49,11 +52,16 @@ public sealed class GetOrdersByCustomerHandlerTests
     public async Task HandleAsync_WithoutCustomerId_ThrowsArgumentException(
         string customerId)
     {
+        // Arrange
         var handler = new GetOrdersByCustomerHandler(
             new FakeOrderRepository());
 
-        await Assert.ThrowsAsync<ArgumentException>(
+        // Act
+        var exception = await Record.ExceptionAsync(
             () => handler.HandleAsync(customerId));
+
+        // Assert
+        Assert.IsType<ArgumentException>(exception);
     }
 
     private sealed class FakeOrderRepository(params Order[] orders)

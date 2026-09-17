@@ -16,6 +16,7 @@ namespace OrderFlow.Inventory.Tests.Application
         [Fact]
         public async Task HandleAsync_WhenStockIsAvailable_ReservesAndWritesSuccess()
         {
+            // Arrange
             var stock = StockItem.Create("WIDGET-01", 10);
             var stockRepository = new FakeStockRepository(stock);
             var reservations = new FakeReservationRepository();
@@ -30,8 +31,10 @@ namespace OrderFlow.Inventory.Tests.Application
                 outbox);
             var orderPlaced = CreateOrderPlaced(quantity: 2);
 
+            // Act
             await handler.HandleAsync(orderPlaced);
 
+            // Assert
             Assert.Equal(1, transactionRunner.ExecutionCount);
             Assert.Equal(2, stock.QuantityReserved);
             Assert.Equal(8, stock.Available);
@@ -49,6 +52,7 @@ namespace OrderFlow.Inventory.Tests.Application
         [Fact]
         public async Task HandleAsync_WhenStockIsInsufficient_WritesFailureWithoutMutation()
         {
+            // Arrange
             var stock = StockItem.Create("WIDGET-01", 1);
             var stockRepository = new FakeStockRepository(stock);
             var reservations = new FakeReservationRepository();
@@ -62,8 +66,10 @@ namespace OrderFlow.Inventory.Tests.Application
                 outbox);
             var orderPlaced = CreateOrderPlaced(quantity: 2);
 
+            // Act
             await handler.HandleAsync(orderPlaced);
 
+            // Assert
             Assert.Equal(0, stock.QuantityReserved);
             Assert.Empty(reservations.Items);
             Assert.Empty(outbox.Succeeded);
@@ -77,6 +83,7 @@ namespace OrderFlow.Inventory.Tests.Application
         [Fact]
         public async Task HandleAsync_WhenAnySkuIsMissing_DoesNotPartiallyReserveStock()
         {
+            // Arrange
             var availableStock = StockItem.Create("A-WIDGET", 10);
             var stockRepository = new FakeStockRepository(availableStock);
             var reservations = new FakeReservationRepository();
@@ -101,8 +108,10 @@ namespace OrderFlow.Inventory.Tests.Application
                 new OrderPlacedLine("B-MISSING", 1, 10m)
                 ]);
 
+            // Act
             await handler.HandleAsync(orderPlaced);
 
+            // Assert
             Assert.Equal(0, availableStock.QuantityReserved);
             Assert.Empty(reservations.Items);
             Assert.Empty(outbox.Succeeded);
@@ -113,6 +122,7 @@ namespace OrderFlow.Inventory.Tests.Application
         [Fact]
         public async Task HandleAsync_WhenEventWasProcessed_DoesNothing()
         {
+            // Arrange
             var stock = StockItem.Create("WIDGET-01", 10);
             var stockRepository = new FakeStockRepository(stock);
             var reservations = new FakeReservationRepository();
@@ -127,8 +137,10 @@ namespace OrderFlow.Inventory.Tests.Application
                 inbox,
                 outbox);
 
+            // Act
             await handler.HandleAsync(orderPlaced);
 
+            // Assert
             Assert.Equal(0, stock.QuantityReserved);
             Assert.Empty(reservations.Items);
             Assert.Empty(outbox.Succeeded);

@@ -13,6 +13,7 @@ namespace OrderFlow.Orders.Tests.Application.CreateOrder
         [Fact]
         public async Task HandleAsync_WithValidCommand_CreatesOrderAndOutboxMessageThenSavesOnce()
         {
+            // Arrange
             var repository = new RecordingOrderRepository();
             var sagaStateRepository =
                 new RecordingOrderSagaStateRepository();
@@ -48,8 +49,10 @@ namespace OrderFlow.Orders.Tests.Application.CreateOrder
                     5.50m)
                 ]);
 
+            // Act
             var result = await handler.HandleAsync(command);
 
+            // Assert
             Assert.NotEqual(Guid.Empty, result.OrderId);
             Assert.Equal(result.OrderId, result.CorrelationId);
             Assert.Equal(OrderStatus.Pending, result.Status);
