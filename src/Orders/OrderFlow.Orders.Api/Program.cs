@@ -34,6 +34,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<CreateOrderHandler>();
 builder.Services.AddScoped<GetOrderByIdHandler>();
+builder.Services.AddScoped<GetOrdersByCustomerHandler>();
 builder.Services.AddScoped<ReservationSucceededHandler>();
 builder.Services.AddScoped<ReservationFailedHandler>();
 builder.Services.AddScoped<PaymentSucceededHandler>();

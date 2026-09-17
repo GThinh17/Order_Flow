@@ -8,12 +8,15 @@ namespace OrderFlow.Orders.Api.Controllers
     [Route("orders")]
     public sealed class OrdersController : ControllerBase
     {
-        private readonly GetOrderByIdHandler _handler;
+        private readonly GetOrderByIdHandler _getByIdHandler;
+        private readonly GetOrdersByCustomerHandler _getByCustomerHandler;
 
         public OrdersController(
-            GetOrderByIdHandler handler)
+            GetOrderByIdHandler getByIdHandler,
+            GetOrdersByCustomerHandler getByCustomerHandler)
         {
-            _handler = handler;
+            _getByIdHandler = getByIdHandler;
+            _getByCustomerHandler = getByCustomerHandler;
         }
 
         [HttpGet("{id:guid}")]
@@ -25,7 +28,7 @@ namespace OrderFlow.Orders.Api.Controllers
             Guid id,
             CancellationToken cancellationToken)
         {
-            var result = await _handler.HandleAsync(
+            var result = await _getByIdHandler.HandleAsync(
                 id,
                 cancellationToken);
 
@@ -54,6 +57,43 @@ namespace OrderFlow.Orders.Api.Controllers
                 result.UpdatedAt);
 
             return Ok(response);
+        }
+
+        [HttpGet]
+        [ProducesResponseType<IReadOnlyCollection<OrderSummaryResponse>>(
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            StatusCodes.Status400BadRequest)]
+        public async Task<
+            ActionResult<IReadOnlyCollection<OrderSummaryResponse>>>
+            GetByCustomerIdAsync(
+                [FromQuery] string? customerId,
+                CancellationToken cancellationToken)
+        {
+            try
+            {
+                var results =
+                    await _getByCustomerHandler.HandleAsync(
+                        customerId ?? string.Empty,
+                        cancellationToken);
+
+                var response = results
+                    .Select(order => new OrderSummaryResponse(
+                        order.OrderId,
+                        order.Status,
+                        order.TotalAmount,
+                        order.CreatedAt))
+                    .ToArray();
+
+                return Ok(response);
+            }
+            catch (ArgumentException exception)
+            {
+                return BadRequest(new
+                {
+                    error = exception.Message
+                });
+            }
         }
     }
 }

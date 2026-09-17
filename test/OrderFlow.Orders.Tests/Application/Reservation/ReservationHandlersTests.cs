@@ -173,6 +173,18 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                     orderId,
                     cancellationToken);
             }
+
+            public Task<IReadOnlyCollection<Order>>
+                GetByCustomerIdAsync(
+                    string customerId,
+                    CancellationToken cancellationToken = default)
+            {
+                IReadOnlyCollection<Order> matches = _orders.Values
+                    .Where(order => order.CustomerId == customerId)
+                    .ToArray();
+
+                return Task.FromResult(matches);
+            }
         }
 
         private sealed class FakeSagaStateRepository(

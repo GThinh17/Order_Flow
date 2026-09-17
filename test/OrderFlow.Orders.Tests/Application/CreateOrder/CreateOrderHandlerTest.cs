@@ -105,6 +105,19 @@ namespace OrderFlow.Orders.Tests.Application.CreateOrder
                     orderId,
                     cancellationToken);
             }
+
+            public Task<IReadOnlyCollection<Order>>
+                GetByCustomerIdAsync(
+                    string customerId,
+                    CancellationToken cancellationToken = default)
+            {
+                IReadOnlyCollection<Order> matches =
+                    AddedOrder?.CustomerId == customerId
+                        ? [AddedOrder]
+                        : [];
+
+                return Task.FromResult(matches);
+            }
         }
 
         private sealed class RecordingOrderSagaStateRepository

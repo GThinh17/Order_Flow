@@ -40,5 +40,17 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
                     order => order.Id == orderId,
                     cancellationToken);
         }
+
+        public async Task<IReadOnlyCollection<Order>>
+            GetByCustomerIdAsync(
+                string customerId,
+                CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Orders
+                .AsNoTracking()
+                .Where(order => order.CustomerId == customerId)
+                .OrderByDescending(order => order.CreatedAt)
+                .ToArrayAsync(cancellationToken);
+        }
     }
 }
