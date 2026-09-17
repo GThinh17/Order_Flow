@@ -96,6 +96,15 @@ namespace OrderFlow.Orders.Tests.Application.CreateOrder
                         ? AddedOrder
                         : null);
             }
+
+            public Task<Order?> GetDetailsByIdAsync(
+                Guid orderId,
+                CancellationToken cancellationToken = default)
+            {
+                return GetByIdAsync(
+                    orderId,
+                    cancellationToken);
+            }
         }
 
         private sealed class RecordingOrderSagaStateRepository

@@ -1,0 +1,165 @@
+@page "/dashboard"
+
+@using OrderFlow.Blazor.Models.Inventory
+@using OrderFlow.Blazor.Models.Orders
+@using OrderFlow.Blazor.Services
+
+@inject OrdersApiClient OrdersApiClient
+@inject InventoryApiClient InventoryApiClient
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="page-heading dashboard-heading">
+    <div>
+        <p class="eyebrow">Current system state</p>
+        <h1>Dashboard</h1>
+        <p class="page-description">
+            Compare recent orders with the inventory quantities used by the saga.
+        </p>
+    </div>
+
+    <button class="secondary-button"
+            @onclick="RefreshAsync"
+            disabled="@_isLoading">
+        @(_isLoading ? "Refreshing..." : "Refresh")
+    </button>
+</div>
+
+<section class="panel customer-filter">
+    <label for="dashboard-customer-id">Customer ID</label>
+    <InputText id="dashboard-customer-id"
+               class="text-input"
+               @bind-Value="_customerId" />
+
+    <button class="primary-button"
+            @onclick="RefreshAsync"
+            disabled="@_isLoading">
+        Load dashboard
+    </button>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(_errorMessage))
+{
+    <div class="alert error-alert" role="alert">
+        @_errorMessage
+    </div>
+}
+
+<div class="content-grid dashboard-grid">
+    <section class="panel">
+        <h2>Recent orders</h2>
+
+        @if (_orders.Count == 0)
+        {
+            <p class="empty-state">
+                No orders were found for this customer.
+            </p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in _orders)
+                        {
+                            <tr>
+                                <td class="mono-text">@order.OrderId</td>
+                                <td>
+                                    <span class="status-badge">
+                                        @order.Status
+                                    </span>
+                                </td>
+                                <td>@order.TotalAmount.ToString("0.00")</td>
+                                <td>@order.CreatedAt.LocalDateTime.ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="panel">
+        <h2>Current stock</h2>
+
+        @if (_stock.Count == 0)
+        {
+            <p class="empty-state">No stock items are available.</p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>On hand</th>
+                            <th>Reserved</th>
+                            <th>Available</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _stock)
+                        {
+                            <tr>
+                                <td><strong>@item.Sku</strong></td>
+                                <td>@item.QuantityOnHand</td>
+                                <td>@item.QuantityReserved</td>
+                                <td>@item.Available</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private IReadOnlyCollection<OrderSummaryResponse> _orders = [];
+    private IReadOnlyCollection<StockResponse> _stock = [];
+    private string _customerId = "demo-customer";
+    private string? _errorMessage;
+    private bool _isLoading;
+
+    protected override Task OnInitializedAsync() => RefreshAsync();
+
+    private async Task RefreshAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_customerId))
+        {
+            _errorMessage = "Customer ID is required.";
+            return;
+        }
+
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            _stock = await InventoryApiClient.GetStockAsync();
+
+            _orders = await OrdersApiClient.GetOrdersByCustomerAsync(
+                _customerId);
+        }
+        catch (Exception exception)
+            when (exception is HttpRequestException
+                or InvalidOperationException
+                or ArgumentException)
+        {
+            _errorMessage = exception.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

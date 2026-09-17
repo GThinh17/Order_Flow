@@ -4,7 +4,7 @@ using OrderFlow.Orders.Application.OrderCommand;
 
 namespace OrderFlow.Orders.Api.Endpoints.Orders;
 
-public static class CreateOrderEndpoint
+public static class OrderEndpoint
 {
     public static IEndpointRouteBuilder MapCreateOrderEndpoint(
         this IEndpointRouteBuilder endpoints)

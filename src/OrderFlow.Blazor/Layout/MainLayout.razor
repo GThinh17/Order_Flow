@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+
+<header class="site-header">
+    <a class="brand" href="/">OrderFlow</a>
+
+    <nav aria-label="Main navigation">
+        <NavLink href="/"
+                 Match="NavLinkMatch.All">
+            Home
+        </NavLink>
+        <NavLink href="/place-order">
+            Place Order
+        </NavLink>
+        <NavLink href="/dashboard">
+            Dashboard
+        </NavLink>
+    </nav>
+</header>
+
+<main class="site-main">
+    @Body
+</main>

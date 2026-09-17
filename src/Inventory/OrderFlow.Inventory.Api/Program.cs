@@ -4,6 +4,26 @@ using OrderFlow.Inventory.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+const string BlazorCorsPolicy = "BlazorClient";
+
+var allowedOrigin =
+    builder.Configuration["Cors:AllowedOrigin"]
+    ?? throw new InvalidOperationException(
+        "CORS allowed origin is not configured.");
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        BlazorCorsPolicy,
+        policy =>
+        {
+            policy
+                .WithOrigins(allowedOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -15,6 +35,8 @@ builder.Services.AddScoped<ReleaseReservationHandler>();
 
 
 var app = builder.Build();
+
+app.UseCors(BlazorCorsPolicy);
 
 if (app.Environment.IsDevelopment())
 {

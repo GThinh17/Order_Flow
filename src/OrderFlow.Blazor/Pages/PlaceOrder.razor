@@ -1,0 +1,289 @@
+@page "/place-order"
+@implements IDisposable
+
+@using System.ComponentModel.DataAnnotations
+@using OrderFlow.Blazor.Models.Orders
+@using OrderFlow.Blazor.Services
+
+@inject OrdersApiClient OrdersApiClient
+
+<PageTitle>Place Order</PageTitle>
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Order saga demo</p>
+        <h1>Place an order</h1>
+        <p class="page-description">
+            Set a quantity greater than zero for the products you want.
+            The page follows the order until the saga finishes.
+        </p>
+    </div>
+</div>
+
+<div class="content-grid">
+    <section class="panel">
+        <h2>Order details</h2>
+
+        <EditForm Model="_form" OnValidSubmit="SubmitAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-field">
+                <label for="customer-id">Customer ID</label>
+                <InputText id="customer-id"
+                           class="text-input"
+                           @bind-Value="_form.CustomerId" />
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Scenario</th>
+                            <th>Unit price</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in _form.Products)
+                        {
+                            <tr>
+                                <td><strong>@product.Sku</strong></td>
+                                <td>@product.Description</td>
+                                <td>@product.UnitPrice.ToString("0.00")</td>
+                                <td>
+                                    <InputNumber class="quantity-input"
+                                                 @bind-Value="product.Quantity"
+                                                 min="0"
+                                                 max="99" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="primary-button"
+                    type="submit"
+                    disabled="@_isSubmitting">
+                @(_isSubmitting ? "Processing..." : "Place order")
+            </button>
+        </EditForm>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="alert error-alert" role="alert">
+                @_errorMessage
+            </div>
+        }
+    </section>
+
+    <section class="panel status-panel">
+        <h2>Saga progress</h2>
+
+        @if (!_createdOrderId.HasValue)
+        {
+            <p class="empty-state">
+                Create an order to watch its status here.
+            </p>
+        }
+        else
+        {
+            <p class="muted-label">Order ID</p>
+            <p class="mono-text">@_createdOrderId</p>
+
+            <p class="muted-label">Current status</p>
+            <p>
+                <span class="status-badge @GetStatusClass(_currentStatus)">
+                    @_currentStatus
+                </span>
+            </p>
+
+            <div class="saga-path" aria-label="Order saga states">
+                <span>Pending</span>
+                <span>→</span>
+                <span>Reserving</span>
+                <span>→</span>
+                <span>Charging</span>
+                <span>→</span>
+                <span>Confirmed / Cancelled</span>
+            </div>
+        }
+
+        @if (_currentOrder is not null)
+        {
+            <dl class="details-list">
+                <dt>Total</dt>
+                <dd>@_currentOrder.TotalAmount.ToString("0.00")</dd>
+
+                <dt>Reservation completed</dt>
+                <dd>@FormatBoolean(_currentOrder.ReservationCompleted)</dd>
+
+                <dt>Payment completed</dt>
+                <dd>@FormatBoolean(_currentOrder.PaymentCompleted)</dd>
+            </dl>
+        }
+    </section>
+</div>
+
+@code {
+    private const int MaximumPollingAttempts = 30;
+
+    private static readonly TimeSpan PollingInterval =
+        TimeSpan.FromSeconds(2);
+
+    private readonly PlaceOrderForm _form = new();
+
+    private CancellationTokenSource? _pollingCancellation;
+    private GetOrderResponse? _currentOrder;
+    private Guid? _createdOrderId;
+    private string? _currentStatus;
+    private string? _errorMessage;
+    private bool _isSubmitting;
+
+    private async Task SubmitAsync()
+    {
+        _errorMessage = null;
+        _currentOrder = null;
+        _createdOrderId = null;
+        _currentStatus = null;
+
+        var selectedLines = _form.Products
+            .Where(product => product.Quantity > 0)
+            .Select(product => new CreateOrderLineRequest(
+                product.Sku,
+                product.Quantity,
+                product.UnitPrice))
+            .ToArray();
+
+        if (selectedLines.Length == 0)
+        {
+            _errorMessage = "Select at least one product.";
+            return;
+        }
+
+        _isSubmitting = true;
+
+        _pollingCancellation?.Cancel();
+        _pollingCancellation?.Dispose();
+        _pollingCancellation = new CancellationTokenSource();
+
+        try
+        {
+            var createdOrder = await OrdersApiClient.CreateOrderAsync(
+                new CreateOrderRequest(
+                    _form.CustomerId,
+                    selectedLines),
+                _pollingCancellation.Token);
+
+            _createdOrderId = createdOrder.OrderId;
+            _currentStatus = createdOrder.Status;
+
+            await PollOrderAsync(
+                createdOrder.OrderId,
+                _pollingCancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when leaving the page or starting another request.
+        }
+        catch (Exception exception)
+            when (exception is HttpRequestException
+                or InvalidOperationException)
+        {
+            _errorMessage = exception.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task PollOrderAsync(
+        Guid orderId,
+        CancellationToken cancellationToken)
+    {
+        for (var attempt = 0;
+             attempt < MaximumPollingAttempts;
+             attempt++)
+        {
+            var order = await OrdersApiClient.GetOrderByIdAsync(
+                orderId,
+                cancellationToken);
+
+            if (order is not null)
+            {
+                _currentOrder = order;
+                _currentStatus = order.Status;
+
+                await InvokeAsync(StateHasChanged);
+
+                if (IsTerminalStatus(order.Status))
+                {
+                    return;
+                }
+            }
+
+            await Task.Delay(
+                PollingInterval,
+                cancellationToken);
+        }
+
+        _errorMessage =
+            "The order did not reach a final status within 60 seconds.";
+    }
+
+    private static bool IsTerminalStatus(string status) =>
+        status is "Confirmed" or "Cancelled";
+
+    private static string FormatBoolean(bool value) =>
+        value ? "Yes" : "No";
+
+    private static string GetStatusClass(string? status) =>
+        status switch
+        {
+            "Confirmed" => "status-success",
+            "Cancelled" => "status-error",
+            "Charging" => "status-warning",
+            _ => "status-neutral"
+        };
+
+    public void Dispose()
+    {
+        _pollingCancellation?.Cancel();
+        _pollingCancellation?.Dispose();
+    }
+
+    private sealed class PlaceOrderForm
+    {
+        [Required]
+        [MaxLength(100)]
+        public string CustomerId { get; set; } = "demo-customer";
+
+        public List<ProductSelection> Products { get; } =
+        [
+            new("DEMO-SUCCESS", 20.00m, "Successful payment"),
+            new("DEMO-FAILURE", 19.99m, "Deterministic payment failure"),
+            new("DEMO-SHORTAGE", 10.00m, "Only one unit is seeded")
+        ];
+    }
+
+    private sealed class ProductSelection
+    {
+        public ProductSelection(
+            string sku,
+            decimal unitPrice,
+            string description)
+        {
+            Sku = sku;
+            UnitPrice = unitPrice;
+            Description = description;
+        }
+
+        public string Sku { get; }
+        public decimal UnitPrice { get; }
+        public string Description { get; }
+        public int Quantity { get; set; }
+    }
+}

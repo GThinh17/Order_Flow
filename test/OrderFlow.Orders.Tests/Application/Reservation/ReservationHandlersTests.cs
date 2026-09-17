@@ -164,6 +164,15 @@ namespace OrderFlow.Orders.Tests.Application.Reservation
                 _orders.TryGetValue(orderId, out var order);
                 return Task.FromResult(order);
             }
+
+            public Task<Order?> GetDetailsByIdAsync(
+                Guid orderId,
+                CancellationToken cancellationToken = default)
+            {
+                return GetByIdAsync(
+                    orderId,
+                    cancellationToken);
+            }
         }
 
         private sealed class FakeSagaStateRepository(

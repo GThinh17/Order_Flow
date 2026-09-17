@@ -9,5 +9,9 @@ namespace OrderFlow.Orders.Application.Abstractions.Persistence
         Task<Order?> GetByIdAsync(
             Guid orderId,
             CancellationToken cancellationToken = default);
+
+        Task<Order?> GetDetailsByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken = default);
     }
 }

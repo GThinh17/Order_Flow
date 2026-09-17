@@ -132,6 +132,20 @@ services:
       pulsar-init:
         condition: service_completed_successfully
 
+  blazor-client:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.Blazor/Dockerfile
+    container_name: orderflow-blazor-client
+    restart: unless-stopped
+    ports:
+      - "${BLAZOR_HTTP_PORT:-5000}:80"
+    depends_on:
+      orders-api:
+        condition: service_started
+      inventory-api:
+        condition: service_started
+
 volumes:
   postgres-data:
   pulsar-data:

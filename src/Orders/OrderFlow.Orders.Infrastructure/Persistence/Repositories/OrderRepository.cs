@@ -29,5 +29,16 @@ namespace OrderFlow.Orders.Infrastructure.Persistence.Repositories
                     order => order.Id == orderId,
                     cancellationToken);
         }
+        public Task<Order?> GetDetailsByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return _dbContext.Orders
+                .AsNoTracking()
+                .Include(order => order.Lines)
+                .SingleOrDefaultAsync(
+                    order => order.Id == orderId,
+                    cancellationToken);
+        }
     }
 }
