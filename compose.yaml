@@ -62,23 +62,23 @@ services:
   pulsar-init:
     image: ${PULSAR_IMAGE}
     container_name: orderflow-pulsar-init
+
     depends_on:
       pulsar:
         condition: service_healthy
+
+    environment:
+      PULSAR_ADMIN_URL: http://pulsar:8080
+      PULSAR_TOPIC: ${PULSAR_TOPIC}
+      PULSAR_PARTITIONS: "4"
+
+    volumes:
+      - ./docker/pulsar/init-topics.sh:/pulsar/init-topics.sh:ro
+
     command:
       - /bin/bash
-      - -c
-      - >
-        bin/pulsar-admin
-        --admin-url http://pulsar:8080
-        topics create-partitioned-topic
-        ${PULSAR_TOPIC}
-        --partitions 4
-        ||
-        bin/pulsar-admin
-        --admin-url http://pulsar:8080
-        topics get-partitioned-topic-metadata
-        ${PULSAR_TOPIC}
+      - /pulsar/init-topics.sh
+
     restart: "no"
 
   orders-api:

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderFlow.Messaging;
 using OrderFlow.Orders.Application.Abstractions.Persistence;
 using OrderFlow.Orders.Infrastructure.Health;
 using OrderFlow.Orders.Infrastructure.Messaging;
@@ -92,48 +93,24 @@ public static class DependencyInjection
             .AddDbContextCheck<OrdersDbContext>("database")
             .AddCheck<PulsarHealthCheck>("pulsar");
 
-        services
-            .AddOptions<PulsarOptions>()
-            .Bind(
-                configuration.GetSection(
-                    PulsarOptions.SectionName))
-            .Validate(
-                options => Uri.TryCreate(
-                    options.ServiceUrl,
-                    UriKind.Absolute,
-                    out _),
-                "Pulsar ServiceUrl is missing or invalid.")
-            .Validate(
-                options =>
-                    !string.IsNullOrWhiteSpace(options.Topic),
-                "Pulsar Topic is missing.")
-            .Validate(
-                options =>
-                    !string.IsNullOrWhiteSpace(
-                        options.SubscriptionName),
-                "Pulsar SubscriptionName is missing.")
-            .Validate(
-                options =>
-                    !string.IsNullOrWhiteSpace(
-                        options.DeadLetterTopic),
-                "Pulsar DeadLetterTopic is missing.")
-            .Validate(
-                options => options.MaxDeliveryAttempts >= 1,
-                "Pulsar MaxDeliveryAttempts must be at least 1.")
-            .Validate(
-                options => options.RedeliveryDelaySeconds >= 0,
-                "Pulsar RedeliveryDelaySeconds cannot be negative.")
-            .ValidateOnStart();
+        services.AddPulsarOptions(configuration);
 
         services.AddSingleton<
             IEventPublisher,
             PulsarEventPublisher>();
 
         services.AddHostedService<
-            OutboxPublisherWorker>();
+            OrdersPublisher>();
 
         services.AddHostedService<
-            OrdersSagaConsumerWorker>();
+            OrdersConsumer>();
+
+        services.AddSingleton<
+            IOrdersEventDispatcher,
+            OrdersEventDispatcher>();
+
+        services.AddSingleton<
+            PulsarFailedMessageHandler>();
 
         return services;
     }

@@ -4,6 +4,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OrderFlow.Messaging;
 
 namespace OrderFlow.Orders.Infrastructure.Messaging
 {

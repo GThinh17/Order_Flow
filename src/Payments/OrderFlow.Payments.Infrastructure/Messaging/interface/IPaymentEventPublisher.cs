@@ -1,6 +1,6 @@
-namespace OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
+namespace OrderFlow.Payments.Infrastructure.Messaging;
 
-public interface IInventoryEventPublisher
+public interface IPaymentEventPublisher
 {
     ValueTask PublishAsync(
         Guid eventId,

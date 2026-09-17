@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 
 COPY ["src/BuildingBlocks/OrderFlow.Contracts/OrderFlow.Contracts.csproj", "src/BuildingBlocks/OrderFlow.Contracts/"]
+COPY ["src/BuildingBlocks/OrderFlow.Messaging/OrderFlow.Messaging.csproj", "src/BuildingBlocks/OrderFlow.Messaging/"]
 COPY ["src/Orders/OrderFlow.Orders.Domain/OrderFlow.Orders.Domain.csproj", "src/Orders/OrderFlow.Orders.Domain/"]
 COPY ["src/Orders/OrderFlow.Orders.Application/OrderFlow.Orders.Application.csproj", "src/Orders/OrderFlow.Orders.Application/"]
 COPY ["src/Orders/OrderFlow.Orders.Infrastructure/OrderFlow.Orders.Infrastructure.csproj", "src/Orders/OrderFlow.Orders.Infrastructure/"]

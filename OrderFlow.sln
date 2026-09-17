@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderFlow.Payments.Domain",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderFlow.Payments.Infrastructure", "src\Payments\OrderFlow.Payments.Infrastructure\OrderFlow.Payments.Infrastructure.csproj", "{02D80058-C372-4D69-9D7F-8911B5D9FC35}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderFlow.Messaging", "src\BuildingBlocks\OrderFlow.Messaging\OrderFlow.Messaging.csproj", "{86FD8287-B81D-41C4-8CC1-3A74BB046393}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -249,6 +251,18 @@ Global
 		{02D80058-C372-4D69-9D7F-8911B5D9FC35}.Release|x64.Build.0 = Release|Any CPU
 		{02D80058-C372-4D69-9D7F-8911B5D9FC35}.Release|x86.ActiveCfg = Release|Any CPU
 		{02D80058-C372-4D69-9D7F-8911B5D9FC35}.Release|x86.Build.0 = Release|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Debug|x64.Build.0 = Debug|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Debug|x86.Build.0 = Debug|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Release|x64.ActiveCfg = Release|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Release|x64.Build.0 = Release|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Release|x86.ActiveCfg = Release|Any CPU
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,5 +288,6 @@ Global
 		{74E805BA-C322-45A7-A0C3-AE331EA9C583} = {FF0E3929-CBDF-D101-A636-4697F11DEC78}
 		{CBFD76C2-CA57-435D-B0F5-77925B964DA6} = {FF0E3929-CBDF-D101-A636-4697F11DEC78}
 		{02D80058-C372-4D69-9D7F-8911B5D9FC35} = {FF0E3929-CBDF-D101-A636-4697F11DEC78}
+		{86FD8287-B81D-41C4-8CC1-3A74BB046393} = {90298CBA-BD6F-3A0A-69D5-97CAD7B05E7E}
 	EndGlobalSection
 EndGlobal

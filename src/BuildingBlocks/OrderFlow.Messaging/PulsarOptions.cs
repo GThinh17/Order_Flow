@@ -1,4 +1,4 @@
-namespace OrderFlow.Orders.Infrastructure.Messaging
+namespace OrderFlow.Messaging
 {
     public sealed class PulsarOptions
     {

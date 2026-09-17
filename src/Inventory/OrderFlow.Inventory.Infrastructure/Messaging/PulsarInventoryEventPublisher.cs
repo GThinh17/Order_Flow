@@ -4,8 +4,9 @@ using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OrderFlow.Messaging;
 
-namespace OrderFlow.Inventory.Infrastructure.Persistence.Messaging;
+namespace OrderFlow.Inventory.Infrastructure.Messaging;
 
 public sealed class PulsarInventoryEventPublisher
     : IInventoryEventPublisher, IAsyncDisposable
@@ -20,7 +21,7 @@ public sealed class PulsarInventoryEventPublisher
         var pulsarOptions = options.Value;
 
         if (!Uri.TryCreate(
-                pulsarOptions.ServiceURL,
+                pulsarOptions.ServiceUrl,
                 UriKind.Absolute,
                 out var serviceUrl))
         {

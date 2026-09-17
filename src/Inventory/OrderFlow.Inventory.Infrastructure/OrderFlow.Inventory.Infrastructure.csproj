@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\BuildingBlocks\OrderFlow.Contracts\OrderFlow.Contracts.csproj" />
     <ProjectReference Include="..\OrderFlow.Inventory.Application\OrderFlow.Inventory.Application.csproj" />
     <ProjectReference Include="..\OrderFlow.Inventory.Domain\OrderFlow.Inventory.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\OrderFlow.Messaging\OrderFlow.Messaging.csproj" />
   </ItemGroup>
 
 </Project>

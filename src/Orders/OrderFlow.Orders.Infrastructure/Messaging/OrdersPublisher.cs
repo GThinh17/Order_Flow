@@ -8,7 +8,7 @@ using OrderFlow.Orders.Infrastructure.Persistence;
 
 namespace OrderFlow.Orders.Infrastructure.Messaging
 {
-    public sealed class OutboxPublisherWorker
+    public sealed class OrdersPublisher
         : BackgroundService
     {
         private const int BatchSize = 20;
@@ -19,13 +19,13 @@ namespace OrderFlow.Orders.Infrastructure.Messaging
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IEventPublisher _eventPublisher;
         private readonly TimeProvider _timeProvider;
-        private readonly ILogger<OutboxPublisherWorker> _logger;
+        private readonly ILogger<OrdersPublisher> _logger;
 
-        public OutboxPublisherWorker(
+        public OrdersPublisher(
             IServiceScopeFactory scopeFactory,
             IEventPublisher eventPublisher,
             TimeProvider timeProvider,
-            ILogger<OutboxPublisherWorker> logger)
+            ILogger<OrdersPublisher> logger)
         {
             _scopeFactory = scopeFactory;
             _eventPublisher = eventPublisher;

@@ -7,8 +7,9 @@ using OrderFlow.Payments.Application.Handler;
 using OrderFlow.Payments.Infrastructure.Health;
 using OrderFlow.Payments.Infrastructure.PaymentGateWay;
 using OrderFlow.Payments.Infrastructure.Persistence;
-using OrderFlow.Payments.Infrastructure.Persistence.Messaging;
+using OrderFlow.Payments.Infrastructure.Messaging;
 using OrderFlow.Payments.Infrastructure.Persistence.Repositories;
+using OrderFlow.Messaging;
 
 namespace OrderFlow.Payments.Infrastructure;
 
@@ -91,48 +92,24 @@ public static class DependencyInjection
         services.AddScoped<
             ProcessReservationSucceededHandler>();
 
-        services
-            .AddOptions<PulsarOptions>()
-            .Bind(
-                configuration.GetSection(
-                    PulsarOptions.SectionName))
-            .Validate(
-                options => Uri.TryCreate(
-                    options.ServiceURL,
-                    UriKind.Absolute,
-                    out _),
-                "Pulsar ServiceUrl is missing or invalid.")
-            .Validate(
-                options =>
-                    !string.IsNullOrWhiteSpace(options.Topic),
-                "Pulsar Topic is required.")
-            .Validate(
-                options =>
-                    !string.IsNullOrWhiteSpace(
-                        options.SubscriptionName),
-                "Pulsar SubscriptionName is required.")
-            .Validate(
-                options =>
-                    !string.IsNullOrWhiteSpace(
-                        options.DeadLetterTopic),
-                "Pulsar DeadLetterTopic is required.")
-            .Validate(
-                options => options.MaxDeliveryAttempts >= 1,
-                "MaxDeliveryAttempts must be at least 1.")
-            .Validate(
-                options => options.RedeliveryDelaySeconds >= 0,
-                "RedeliveryDelaySeconds cannot be negative.")
-            .ValidateOnStart();
+        services.AddPulsarOptions(configuration);
 
         services.AddHostedService<
-            ReservationSucceededConsumerWorker>();
+            PaymentsConsumer>();
 
         services.AddSingleton<
             IPaymentEventPublisher,
             PulsarPaymentEventPublisher>();
 
         services.AddHostedService<
-            PaymentOutboxPublisherWorker>();
+            PaymentsPublisher>();
+
+        services.AddSingleton<
+            IPaymentsEventDispatcher,
+            PaymentsEventDispatcher>();
+
+        services.AddSingleton<
+            PulsarFailedMessageHandler>();
 
         services
             .AddHealthChecks()

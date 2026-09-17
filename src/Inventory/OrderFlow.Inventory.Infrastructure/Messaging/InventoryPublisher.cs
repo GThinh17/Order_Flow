@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OrderFlow.Inventory.Infrastructure.Persistence;
 
-namespace OrderFlow.Payments.Infrastructure.Persistence.Messaging;
+namespace OrderFlow.Inventory.Infrastructure.Messaging;
 
-public sealed class PaymentOutboxPublisherWorker
-    : BackgroundService
+public sealed class InventoryPublisher : BackgroundService
 {
     private const int BatchSize = 20;
 
@@ -14,15 +14,15 @@ public sealed class PaymentOutboxPublisherWorker
         TimeSpan.FromSeconds(2);
 
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IPaymentEventPublisher _eventPublisher;
+    private readonly IInventoryEventPublisher _eventPublisher;
     private readonly TimeProvider _timeProvider;
-    private readonly ILogger<PaymentOutboxPublisherWorker> _logger;
+    private readonly ILogger<InventoryPublisher> _logger;
 
-    public PaymentOutboxPublisherWorker(
+    public InventoryPublisher(
         IServiceScopeFactory scopeFactory,
-        IPaymentEventPublisher eventPublisher,
+        IInventoryEventPublisher eventPublisher,
         TimeProvider timeProvider,
-        ILogger<PaymentOutboxPublisherWorker> logger)
+        ILogger<InventoryPublisher> logger)
     {
         _scopeFactory = scopeFactory;
         _eventPublisher = eventPublisher;
@@ -48,7 +48,7 @@ public sealed class PaymentOutboxPublisherWorker
             {
                 _logger.LogError(
                     exception,
-                    "Failed to publish Payments outbox messages.");
+                    "Failed to publish Inventory outbox messages.");
             }
 
             try
@@ -72,7 +72,7 @@ public sealed class PaymentOutboxPublisherWorker
             _scopeFactory.CreateAsyncScope();
 
         var dbContext = scope.ServiceProvider
-            .GetRequiredService<PaymentsDbContext>();
+            .GetRequiredService<InventoryDbContext>();
 
         var messages = await dbContext.OutboxMessages
             .Where(message => message.PublishedAt == null)
@@ -96,7 +96,7 @@ public sealed class PaymentOutboxPublisherWorker
                 cancellationToken);
 
             _logger.LogInformation(
-                "Published Payments outbox event {EventId} of type {EventType}.",
+                "Published Inventory outbox event {EventId} of type {EventType}.",
                 message.EventId,
                 message.EventType);
         }
